@@ -11,7 +11,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <jack/jack.h>
+#include <celt/celt.h>
+#include <speex/speex_jitter.h>
 
+#include "netyack.h"
 #include "error_and_die.h"
 
 static jack_port_t *input;
@@ -36,16 +39,15 @@ void jack_shutdown(void *arg)
 	die();
 }
 
-int main(int argc, char **argv)
+void jack_setup(char *name)
 {
 	int ret;
 	const char **ports;
-	const char *server_name = NULL;
 
-	jack_options_t options = JackNullOption;
+	jack_options_t options = JackNoStartServer;
 	jack_status_t status;
-	
-	client = jack_client_open(argv[0], options, &status, server_name);
+
+	client = jack_client_open(name, options, &status, NULL);
 	if (!client) {
 		whine("Opening JACK client failed (0x%2.0x)\n", status);
 		if (status & JackServerFailed)
@@ -87,15 +89,23 @@ int main(int argc, char **argv)
 	if (ret)
 		panic("Cannot connect output ports!\n");
 
+	info("plugged to jack\n");
+}
+
+int main(int argc, char **argv)
+{
+	jack_setup(argv[0]);
+	info("netyack up and running\n");
+
 	/* Keep running until stopped by the user. */
-	sleep (-1);
+	sleep(-1);
 
 	/*
 	 * This is never reached but if the program had some other way to exit
 	 * besides being killed, they would be important to call.
 	 */
 
-	jack_client_close (client);
+	jack_client_close(client);
 
 	return 0;
 }

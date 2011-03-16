@@ -1,8 +1,21 @@
 What libraries are required?
 ============================
 
-Well, libc is the only one. Most operating systems already have their
-libc shipped. That's it, nothing else.
+To run netyack, you need:
+ * libcelt
+ * libspeexdsp
+ * libjackd2
+
+Under Debian simply type:
+# apt-get install libcelt0-0 libcelt-dev libspeexdsp1 libspeexdsp-dev jackd2 libjack-jackd2-dev libjack-jackd2-0
+
+If the compiler somehow complains about not finding libspeexdsp1, try:
+# ln -s /usr/lib/libspeexdsp.so.1 /usr/lib/libspeexdsp.so
+
+Then run the JACK2 daemon if not already running, e.g. with:
+# jackd -d alsa
+
+Now you're ready to go yacking!
 
 Installation
 ============

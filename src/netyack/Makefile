@@ -6,7 +6,7 @@
 include ../definitions.mk
 
 INCLUDE     = -I.. -I.
-LIBS        = -ljack -lpthread -ldl -lrt
+LIBS        = -ljack -lpthread -ldl -lrt -lspeexdsp -lcelt0 -lm
 
 core-objs   = netyack.o
 lib-objs    = xmalloc.o                  \
