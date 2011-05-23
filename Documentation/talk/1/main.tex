@@ -20,6 +20,7 @@
 \setlength{\parindent}{0pt}
 \newcommand*\sfb[1]{\textbf{#1}}
 \definecolor{red2}{rgb}{.7,0,.39}
+\definecolor{grey}{rgb}{0.5,0.5,0.5}
 \setbeamercolor{title}{fg=white}
 \setbeamercolor{frametitle}{fg=white}
 \setbeamercolor{framesubtitle}{fg=white}
@@ -75,7 +76,7 @@
 }
 
 \frame {
-	\frametitle{How others tried to challenge this: \\\bigskip 1) Skype [5]}
+	\frametitle{\textcolor{grey}{How others tried to challenge this:} \\\bigskip 1) Skype [5]}
 	\begin{itemize}
 		\item Implements VoIP, looks as an alternative on the first hand, but ...\medskip
 		\item Almost everything is obfuscated, many antidebugging tricks, much ciphered code [4]\medskip
@@ -85,21 +86,40 @@
 }
 
 \frame {
-	\frametitle{How others tried to challenge this: \\\bigskip 2) GoogleTalk/GoogleVoice}
+	\frametitle{\textcolor{grey}{How others tried to challenge this:} \\\bigskip 2) GoogleTalk/GoogleVoice}
 	\begin{itemize}
 		\item Also implements VoIP, proprietary like Skype\medskip
 		\item No end-to-end encryption [6]\medskip
+		\item Not usable by hardware phones\medskip
 		\item Google seems to save your human voice for other purposes [7]\medskip
 		\item Needs Adobe Flash Player (''Symantec recently highlighted Flash for having one of the worst security records in 2009.'') [8]
 	\end{itemize}
 }
 
 \frame {
-	\frametitle{How we can challenge this}
+	\frametitle{\textcolor{grey}{How we can challenge this:} \\\bigskip Basic requirements for a new global telephony network}
 	\begin{itemize}
-		\item \medskip
-		\item \medskip
+		\item Use of a robust underlying and widespread network\medskip
+		\item Compatibility with hardware phones\medskip
+		\item Openness/transparency of the system\medskip
+		\item (No call fees/charges)\medskip
+		\item Strong cryptography between endpoints\medskip
+		\item Control by users instead of companies\medskip
 	\end{itemize}
+}
+
+\frame {
+	\frametitle{Design of the telephony network architecture}
+%
+}
+
+\frame {
+	\frametitle{Design of the telephony network architecture}
+%image
+}
+
+\frame {
+	\frametitle{Implementation suggestions}
 }
 
 \frame {
