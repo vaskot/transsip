@@ -30,11 +30,27 @@
 \usebackgroundtemplate{
 	\includegraphics[width=\paperwidth,height=\paperheight]{img/bg.jpg}
 }
+\setbeamertemplate{footline}%{infolines theme}
+{
+\leavevmode%
+\hbox{%
+\begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,center]{author in head/foot}%
+\usebeamerfont{author in head/foot}\insertshortauthor%~~(\insertshortinstitute)
+\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,center]{title in head/foot}%
+\usebeamerfont{title in head/foot}\insertshorttitle
+\end{beamercolorbox}%
+\begin{beamercolorbox}[wd=.333333\paperwidth,ht=2.25ex,dp=1ex,right]{date in head/foot}%
+\usebeamerfont{date in head/foot}\insertshortdate{}\hspace*{2em}
+\insertframenumber{} / \inserttotalframenumber\hspace*{2ex}
+\end{beamercolorbox}}%
+\vskip0pt%
+}
 
 \begin{document}
 
-\title[netyack telephony network]{\huge{On creating a novel, future
-				        global telephony network}}
+\title[a novel telephony network architecture]{\huge{On creating a novel, future
+						     global telephony network}}
 \author[Daniel Borkmann] {
 	\vspace*{-20pt}
 	\newline
@@ -42,7 +58,6 @@
 	\texttt{http://gnumaniacs.org}\\\bigskip
 	IET PATW 2011, Switzerland
 }
-\institute [ETH Zurich]{}
 \date[\today]{}
 
 \frame {
@@ -52,10 +67,10 @@
 \frame {
 	\frametitle{Some notes about myself}
 	\begin{itemize}
-		\item 2006-2009: Technical Computer Science, B. Sc.\medskip
-		\item Since 2009: Computer Science, M. Sc.\medskip
-		\item Since 2011: Master thesis @ ETH Zurich\medskip
+		\item 2006-2009: Technical Computer Science, B. Sc., HTWK Leipzig\medskip
+		\item Since 2009: Computer Science, M. Sc., HTWK Leipzig\medskip
 		\item Since 2009: Scholarship from the German National Merit Foundation\medskip
+		\item Since 2011: Master thesis, ETH Zurich\medskip
 		\item Software development as a student worker and in my spare time\medskip
 		\begin{itemize}
 			\item Siemens, Max Planck Society, ipoque\medskip
@@ -65,28 +80,28 @@
 }
 
 \frame {
-	\frametitle{Situation among todays telecommunications}
+	\frametitle{Situation among todays telecommunications industry}
 	\begin{itemize}
 		\item Oligopoly, i.e. approx 10 providers in Switzerland [1]\medskip
 		\item Cost issues especially on international calls\medskip
 		\item Proprietary legacy systems with security flaws [2]\medskip
-		\item Privacy issues, i.e. wiretapping [3]\medskip
+		\item Privacy issues, i.e. wiretapping, censorship [3]\medskip
 		\item Sparsely in focus of university research
 	\end{itemize}
 }
 
 \frame {
-	\frametitle{\textcolor{grey}{How others tried to challenge this:} \\\bigskip 1) Skype [5]}
+	\frametitle{\textcolor{grey}{How others tried to challenge this:} \\ 1) Skype [5]}
 	\begin{itemize}
 		\item Implements VoIP, looks as an alternative on the first hand, but ...\medskip
-		\item Almost everything is obfuscated, many antidebugging tricks, much ciphered code [4]\medskip
+		\item Almost everything is obfuscated, many antidebugging tricks, much ciphered code (Is there something to hide ?) [4]\medskip
 		\item Impossible to scan for trojan/backdoor/malware inclusion [4]\medskip
 		\item RC4 is used for obfuscation not for privacy [4]\medskip
 	\end{itemize}
 }
 
 \frame {
-	\frametitle{\textcolor{grey}{How others tried to challenge this:} \\\bigskip 2) GoogleTalk/GoogleVoice}
+	\frametitle{\textcolor{grey}{How others tried to challenge this:} \\ 2) GoogleTalk/GoogleVoice}
 	\begin{itemize}
 		\item Also implements VoIP, proprietary like Skype\medskip
 		\item No end-to-end encryption [6]\medskip
@@ -97,29 +112,65 @@
 }
 
 \frame {
-	\frametitle{\textcolor{grey}{How we can challenge this:} \\\bigskip Basic requirements for a new global telephony network}
+	\frametitle{\textcolor{grey}{How we can challenge this:} \\ Basic requirements for a new global telephony network}
 	\begin{itemize}
-		\item Use of a robust underlying and widespread network\medskip
-		\item Compatibility with hardware phones\medskip
-		\item Openness/transparency of the system\medskip
-		\item (No call fees/charges)\medskip
-		\item Strong cryptography between endpoints\medskip
-		\item Control by users instead of companies\medskip
+		\item Use of a robust underlying and widespread network \textcolor{green}{$\rightarrow$ VoIP, Internet}\medskip
+		\item Compatibility with hardware phones \textcolor{green}{$\rightarrow$ SIP}\medskip
+		\item Openness/transparency of the system \textcolor{green}{$\rightarrow$ Open Source}\medskip
+		\item No call fees/charges \textcolor{green}{$\rightarrow$ Only Internet fees}\medskip
+		\item Strong cryptography between endpoints \textcolor{green}{$\rightarrow$ i.e. ECC, McEliece}\medskip
+		\item Control by users instead of companies \textcolor{green}{$\rightarrow$ Open Source Community}\medskip
 	\end{itemize}
 }
 
 \frame {
 	\frametitle{Design of the telephony network architecture}
-%
+	\begin{itemize}
+		\item Software should run on an \textbf{embedded system} and consists of 4 parts\medskip
+		\begin{itemize}
+			\item \textbf{SIP server} for communication with trusted phones in LAN\medskip
+			\item \textbf{D}istributed \textbf{H}ash \textbf{T}able for global participant retrival\medskip
+			\item \textbf{Client/Server} for voice transmission via Internet\medskip
+			\item Internal \textbf{address book} for participant namespace translations
+		\end{itemize}
+	\end{itemize}
+	\hspace*{15pt}
+	\includegraphics[width=0.9\textwidth]{img/scheme.png}
 }
 
 \frame {
 	\frametitle{Design of the telephony network architecture}
-%image
+	\begin{itemize}
+		\item \textbf{Distributed Hash Table} (DHT, i.e. Kademlia [9]): \\\medskip $f(\text{User}):=[\text{IP}_{\text{public}}, \text{Port}_{\text{public}}]$, \textit{where} $\text{User}:=SHA_{256}(\text{Key}_{\text{public}})$\medskip
+		\item Internal \textbf{address book}: \\\medskip $g(\text{PhoneNumber}):=\text{Username}$ \textit{and} $h(\text{Username}):=\text{Key}_{\text{public}}$\medskip
+		\item \textbf{Connection endpoint}: \\\medskip $f(SHA_{256}(h(g(\text{PhoneNumber}))))$\medskip
+		\item Voice information is then \textbf{encrypted} with $\text{Key}_{\text{public}}$\medskip
+		\item Ideally, the client/server protocol cannot be recognized by ISPs DPIs\medskip
+		\item ($\text{IP}_{\text{public}}, \text{Port}_{\text{public}}$ obtained via STUN)
+	\end{itemize}
 }
 
 \frame {
-	\frametitle{Implementation suggestions}
+	\frametitle{Scenario: Alice calls Bob}
+	\begin{enumerate}
+		\item Both parties have exchanged their $\text{Key}_{\text{public}}$ (once)\medskip
+		\item Alice calls i.e. $1234$ from her SIP phone, where $g(1234)$:=\texttt{Bob}\medskip
+		\item Since \texttt{Bob} has a registered public key, $h(\text{\texttt{Bob}})$ returns $\text{Key}_{\text{Bob,public}}$\medskip
+		\item Alice looks up $SHA_{256}(\text{Key}_{\text{Bob,public}})$ by applying to $f$ in the DHT\medskip
+		\item Alice receives $[\text{IP}_{\text{Bob,public}}, \text{Port}_{\text{Bob,public}}]$\medskip
+		\item Alice opens a direct and $\text{Key}_{\text{Bob,public}}$-encrypted connection to Bob\medskip
+		\item Bob accepts the connection from Alice, delivers a notification to the SIP phones and both transfers their encrypted voice data
+	\end{enumerate}
+}
+
+\frame {
+	\frametitle{Conclusion}
+	\begin{itemize}
+		\item Presented architecture is able to replace current telephony systems\medskip
+		\item Through openness of the system, wide range of research and audits can be performed\medskip
+		\item By the distributed manner, the network is more stable towards outages\medskip
+		\item System would be privacy-enhanced and "resistant" against wiretapping
+	\end{itemize}
 }
 
 \frame {
@@ -134,22 +185,22 @@
 		\bigskip
 		\texttt{dborkma@tik.ee.ethz.ch}\\
 		\medskip
-		\texttt{http://gnumaniacs.org}\\
-		\texttt{http://netyack.org}
+		\texttt{http://gnumaniacs.org}
 	\end{center}
 }
 
 \frame {
-	\frametitle{References}
+	\frametitle{References, 24.05.2011}
 	\begin{itemize}
-		\item [1] http://www.telecomrating.ch/ratingaktuell.html
-		\item [2] http://events.ccc.de/congress/2010/Fahrplan/events/4208.en.html
-		\item [3] http://www.zdnetasia.com/beware-govts-are-tapping-your-3g-calls-62201577.htm
-		\item [4] http://www.blackhat.com/presentations/bh-europe-06/bh-eu-06-biondi/bh-eu-06-biondi-up.pdf
-		\item [5] http://www.nartv.org/mirror/breachingtrust.pdf
-		\item [6] http://tinyurl.com/3l9pzrf
-		\item [7] http://cartesianproduct.wordpress.com/2011/05/02/google-wants-your-voice/
-		\item [8] http://www.apple.com/hotnews/thoughts-on-flash/
+		\item [1] \url{http://www.telecomrating.ch/ratingaktuell.html}
+		\item [2] \url{http://events.ccc.de/congress/2010/Fahrplan/events/4208.en.html}
+		\item [3] \url{http://www.zdnetasia.com/beware-govts-are-tapping-your-3g-calls-62201577.htm}
+		\item [4] \url{http://www.blackhat.com/presentations/bh-europe-06/bh-eu-06-biondi/bh-eu-06-biondi-up.pdf}
+		\item [5] \url{http://www.nartv.org/mirror/breachingtrust.pdf}
+		\item [6] \url{http://tinyurl.com/3l9pzrf}
+		\item [7] \url{http://cartesianproduct.wordpress.com/2011/05/02/google-wants-your-voice/}
+		\item [8] \url{http://www.apple.com/hotnews/thoughts-on-flash/}
+		\item [9] \url{http://www.gnumaniacs.org/kademlia.pdf}
 	\end{itemize}
 }
 
