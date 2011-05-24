@@ -49,8 +49,7 @@
 
 \begin{document}
 
-\title[a novel telephony network architecture]{\huge{On creating a novel, future
-						     global telephony network}}
+\title[On creating a novel telephony network]{\huge{On creating a novel global telephony network}}
 \author[Daniel Borkmann] {
 	\vspace*{-20pt}
 	\newline
@@ -151,15 +150,15 @@
 }
 
 \frame {
-	\frametitle{Scenario: Alice calls Bob}
+	\frametitle{Scenario: Bob calls Alice}
 	\begin{enumerate}
 		\item Both parties have exchanged their $\text{Key}_{\text{public}}$ (once)\medskip
-		\item Alice calls i.e. $1234$ from her SIP phone, where $g(1234)$:=\texttt{Bob}\medskip
-		\item Since \texttt{Bob} has a registered public key, $h(\text{\texttt{Bob}})$ returns $\text{Key}_{\text{Bob,public}}$\medskip
-		\item Alice looks up $SHA_{256}(\text{Key}_{\text{Bob,public}})$ by applying to $f$ in the DHT\medskip
-		\item Alice receives $[\text{IP}_{\text{Bob,public}}, \text{Port}_{\text{Bob,public}}]$\medskip
-		\item Alice opens a direct and $\text{Key}_{\text{Bob,public}}$-encrypted connection to Bob\medskip
-		\item Bob accepts the connection from Alice, delivers a notification to the SIP phones and both transfers their encrypted voice data
+		\item Bob calls i.e. $1234$ from his SIP phone, where $g(1234)$:=\texttt{Alice}\medskip
+		\item Since \texttt{Alice} has a registered public key, $h(\text{\texttt{Alice}}):=\text{Key}_{\text{Alice,public}}$\medskip
+		\item Bob looks up $SHA_{256}(\text{Key}_{\text{Alice,public}})$ by applying to $f$ in the DHT\medskip
+		\item Bob receives $[\text{IP}_{\text{Alice,public}}, \text{Port}_{\text{Alice,public}}]$\medskip
+		\item Bob opens a direct and $\text{Key}_{\text{Alice,public}}$-encrypted connection to Alice\medskip
+		\item Alice accepts the connection from Bob, delivers a notification to her SIP phones and both parties transfer their encrypted voice data
 	\end{enumerate}
 }
 
