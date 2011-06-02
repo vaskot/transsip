@@ -5,12 +5,13 @@
 
 include ../definitions.mk
 
-INCLUDE     = -I.. -I.
-LIBS        = -ljack -lpthread -ldl -lrt -lspeexdsp -lcelt0 -lm
+INCLUDE     = -I..
+LIBS        = -lcrypt
 
 core-objs   = netyack.o
-lib-objs    = xmalloc.o                  \
-	      strlcpy.o                  \
+lib-objs    = xmalloc.o		\
+	      strlcpy.o		\
+	      dht.o		\
 	      write_or_die.o
 
 target      = netyack
