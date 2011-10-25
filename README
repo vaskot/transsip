@@ -1,1 +1,11 @@
 ... in development ...
+
+the following tools are planned:
+
+- picopbx: a extremly minimal Asterisk-like PBX for SIP phones
+- netyack: a simple ip to ip voip phone, that uses elliptic curve crypto (NaCl)
+- sipwar: a SIP war dialer
+- sipmodem: a SIP modem
+- sip2p: a SIP peer to peer network (maybe as an extension to picopbx?)
+- ...
+
