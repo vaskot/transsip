@@ -2,7 +2,7 @@
  * netyack
  * By Daniel Borkmann <daniel@netyack.org>
  * Copyright 2009, 2010 Daniel Borkmann.
- * Subject to the GPL.
+ * Subject to the GPL, version 2.
  */
 
 #ifndef SIGNALS_H

@@ -2,7 +2,7 @@
  * netyack
  * By Daniel Borkmann <daniel@netyack.org>
  * Copyright 2009, 2010 Daniel Borkmann.
- * Subject to the GPL.
+ * Subject to the GPL, version 2.
  */
 
 #ifndef DIE_H
@@ -14,15 +14,12 @@
 #include <string.h>
 #include <errno.h>
 
-#include "tty.h"
-
 static inline void error_and_die(int status, char *msg, ...)
 {
 	va_list vl;
 	va_start(vl, msg);
 	vfprintf(stderr, msg, vl);
 	va_end(vl);
-
 	exit(status);
 }
 
@@ -37,7 +34,6 @@ static inline void panic(char *msg, ...)
 	va_start(vl, msg);
 	vfprintf(stderr, msg, vl);
 	va_end(vl);
-
 	die();
 }
 
@@ -67,128 +63,10 @@ static inline void debug(char *msg, ...)
 
 	fflush(stderr);
 }
-
-static inline void debug_blue(char *msg, ...)
-{
-	va_list vl;
-
-	fprintf(stderr, "%s", colorize_start_full(white, blue));
-	va_start(vl, msg);
-	vfprintf(stderr, msg, vl);
-	va_end(vl);
-	fprintf(stderr, "%s\n", colorize_end());
-
-	fflush(stderr);
-}
-
-static inline void debug_red(char *msg, ...)
-{
-	va_list vl;
-
-	fprintf(stderr, "%s", colorize_start_full(white, red));
-	va_start(vl, msg);
-	vfprintf(stderr, msg, vl);
-	va_end(vl);
-	fprintf(stderr, "%s\n", colorize_end());
-
-	fflush(stderr);
-}
-
-static inline void debug_green(char *msg, ...)
-{
-	va_list vl;
-
-	fprintf(stderr, "%s", colorize_start_full(white, green));
-	va_start(vl, msg);
-	vfprintf(stderr, msg, vl);
-	va_end(vl);
-	fprintf(stderr, "%s\n", colorize_end());
-
-	fflush(stderr);
-}
 #else
 static inline void debug(char *msg, ...)
 {
 	/* NOP */
 }
-
-static inline void debug_blue(char *msg, ...)
-{
-	/* NOP */
-}
-
-static inline void debug_red(char *msg, ...)
-{
-	/* NOP */
-}
-
-static inline void debug_green(char *msg, ...)
-{
-	/* NOP */
-}
 #endif /* _DEBUG_ */
-
-static inline void print_blue(char *msg, ...)
-{
-	va_list vl;
-
-	fprintf(stdout, "%s", colorize_start_full(white, blue));
-	va_start(vl, msg);
-	vfprintf(stdout, msg, vl);
-	va_end(vl);
-	fprintf(stdout, "%s\n", colorize_end());
-
-	fflush(stdout);
-}
-
-static inline void print_red(char *msg, ...)
-{
-	va_list vl;
-
-	fprintf(stdout, "%s", colorize_start_full(white, red));
-	va_start(vl, msg);
-	vfprintf(stdout, msg, vl);
-	va_end(vl);
-	fprintf(stdout, "%s\n", colorize_end());
-
-	fflush(stdout);
-}
-
-static inline void print_green(char *msg, ...)
-{
-	va_list vl;
-
-	fprintf(stdout, "%s", colorize_start_full(white, green));
-	va_start(vl, msg);
-	vfprintf(stdout, msg, vl);
-	va_end(vl);
-	fprintf(stdout, "%s\n", colorize_end());
-
-	fflush(stdout);
-}
-
-static inline void puke_and_die_num(int status, int num, char *msg, ...)
-{
-	va_list vl;
-	va_start(vl, msg);
-	vfprintf(stderr, msg, vl);
-	va_end(vl);
-
-	fprintf(stderr, ": %s\n", strerror(num));
-
-	exit(status);
-}
-
-static inline void puke_and_die(int status, char *msg, ...)
-{
-	va_list vl;
-	va_start(vl, msg);
-	vfprintf(stderr, msg, vl);
-	va_end(vl);
-
-	fprintf(stderr, ": %s\n", strerror(errno));
-
-	exit(status);
-}
-
 #endif /* DIE_H */
