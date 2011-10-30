@@ -22,13 +22,17 @@
 static jack_port_t *input, *output;
 static jack_client_t *client;
 
-static int jack_process_new_frames(jack_nframes_t nframes, void *arg)
+static int jack_process_phys_frames(jack_nframes_t nframes, void *arg)
 {
 	jack_default_audio_sample_t *in, *out;
 	in = jack_port_get_buffer(input, nframes);
 	out = jack_port_get_buffer(output, nframes);
 	memcpy(out, in, sizeof(*in) * nframes);
 	return 0;
+}
+
+static int jack_process_new_net_frames(jack_nframes_t nframes, void *arg)
+{
 }
 
 static void jack_shutdown(void *arg)
@@ -51,7 +55,7 @@ static void jack_setup(const char *name)
 		die();
 	}
 
-	jack_set_process_callback(client, jack_process_new_frames, 0);
+	jack_set_process_callback(client, jack_process_phys_frames, 0);
 	jack_on_shutdown(client, jack_shutdown, 0);
 
 	input = jack_port_register(client, "input",
