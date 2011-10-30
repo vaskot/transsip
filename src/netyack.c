@@ -94,6 +94,57 @@ static void jack_setup(const char *name)
 	info("plugged to jack\n");
 }
 
+static void help(void)
+{
+	printf("\npeerspeak %s, lightweight curve25519-based VoIP phone\n",
+	       VERSION_STRING);
+	printf("http://www.transsip.org\n\n");
+	printf("Usage: peerspeak [options]\n");
+	printf("Options:\n");
+	printf("  -p|--port <num>         Port number for daemon (mandatory)\n");
+	printf("  -c|--call <name>        Call alias from config\n");
+	printf("  -t|--stun <server>      Show public IP/Port mapping via STUN\n");
+	printf("  -k|--keygen             Generate public/private keypair\n");
+	printf("  -x|--export             Export your public data for remote servers\n");
+	printf("  -C|--dumpc              Dump parsed clients\n");
+	printf("  -S|--dumps              Dump parsed servers\n");
+	printf("  -v|--version            Print version\n");
+	printf("  -h|--help               Print this help\n");
+	printf("\n");
+	printf("Example:\n");
+	printf("  curvetun --keygen\n");
+	printf("  curvetun --export\n");
+	printf("  curvetun --port 3244 &\n");
+	printf("  curvetun --call john\n");
+	printf("\n");
+	printf("Note:\n");
+	printf("  There is no default port specified, so that you are forced\n");
+	printf("  to select your own! For client/server status messages see syslog!\n");
+	printf("\n");
+	printf("Secret ingredient: 7647-14-5\n");
+	printf("\n");
+	printf("Please report bugs to <bugs@transsip.org>\n");
+	printf("Copyright (C) 2011 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,\n");
+	printf("License: GNU GPL version 2\n");
+	printf("This is free software: you are free to change and redistribute it.\n");
+	printf("There is NO WARRANTY, to the extent permitted by law.\n\n");
+	die();
+}
+
+static void version(void)
+{
+	printf("\npeerspeak %s, lightweight curve25519-based VoIP phone\n",
+	       VERSION_STRING);
+	printf("Build: %s\n", BUILD_STRING);
+	printf("http://www.transsip.org\n\n");
+	printf("Please report bugs to <bugs@transsip.org>\n");
+	printf("Copyright (C) 2011 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,\n");
+	printf("License: GNU GPL version 2\n");
+	printf("This is free software: you are free to change and redistribute it.\n");
+	printf("There is NO WARRANTY, to the extent permitted by law.\n\n");
+	die();
+}
+
 int main(int argc, char **argv)
 {
 	jack_setup(argv[0]);
