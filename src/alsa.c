@@ -156,6 +156,9 @@ struct alsa_dev *alsa_open(char *devname, unsigned int rate,
 	int ret;
 	struct alsa_dev *dev;
 
+	if (!devname)
+		devname = "plughw:0,0";
+
 	dev = xzmalloc(sizeof(*dev));
 	dev->name = xstrdup(devname);
 	dev->channels = channels;
