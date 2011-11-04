@@ -1,0 +1,3 @@
+- Implementation in general
+- Asterisk-plugin that acts as a frontend for the transsip daemon
+  (for usage with SIP hardware phones)
