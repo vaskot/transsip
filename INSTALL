@@ -1,13 +1,12 @@
 What libraries are required?
 ============================
 
-To run netyack, you need:
+To run transsip, you need:
  * libcelt
  * libspeexdsp
  * libasound
- * libcrypt
 
-Under Debian simply type:
+On Debian simply type:
 # apt-get install libcelt0-0 libcelt-dev       \
                   libspeexdsp1 libspeexdsp-dev \
                   libasound2-dev libasound2

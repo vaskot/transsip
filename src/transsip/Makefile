@@ -6,7 +6,7 @@
 include ../definitions.mk
 
 INCLUDE     = -I.. -I.
-LIBS        = -lspeexdsp -lasound -lcelt0 -lm -lcrypt
+LIBS        = -lspeexdsp -lasound -lcelt0 -lm
 
 core-objs   = transsip.o
 lib-objs    = xmalloc.o		\
