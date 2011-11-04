@@ -36,8 +36,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Local ALSA as an audio source */
-
 #include "compiler.h"
 #include "die.h"
 #include "alsa.h"
