@@ -98,7 +98,7 @@ static inline void BUG_ON(int cond, char *msg, ...)
 
 #define BUG_ON_(cond, msg...)			\
 do {						\
-	if (unlikely(cond)) {			\
+	if (unlikely(!!(cond))) {		\
 		syslog(LOG_ERR, "BUG: " ##msg);	\
 		die();				\
 	}					\
