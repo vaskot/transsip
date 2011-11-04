@@ -14,6 +14,9 @@
 #include <stdarg.h>
 #include <string.h>
 #include <errno.h>
+#include <syslog.h>
+
+#include "compiler.h"
 
 static inline void error_and_die(int status, char *msg, ...)
 {
@@ -38,6 +41,12 @@ static inline void panic(char *msg, ...)
 	die();
 }
 
+#define syslog_panic(msg...)		\
+do {					\
+	syslog(LOG_ERR, ##msg);		\
+	die();				\
+} while (0)
+
 static inline void whine(char *msg, ...)
 {
 	va_list vl;
@@ -54,6 +63,47 @@ static inline void info(char *msg, ...)
 	va_end(vl);
 }
 
+#define syslog_info(msg...)		\
+do {					\
+	syslog(LOG_INFO, ##msg);	\
+} while (0)
+
+static inline void BUG(char *msg, ...)
+{
+	va_list vl;
+	whine("BUG: ");
+	va_start(vl, msg);
+	vfprintf(stderr, msg, vl);
+	va_end(vl);
+	die();
+}
+
+#define BUG_(msg...)			\
+do {					\
+	syslog(LOG_ERR, "BUG: " ##msg);	\
+	die();				\
+} while (0)
+
+static inline void BUG_ON(int cond, char *msg, ...)
+{
+	va_list vl;
+	if (unlikely(cond)) {
+		whine("BUG: ");
+		va_start(vl, msg);
+		vfprintf(stderr, msg, vl);
+		va_end(vl);
+		die();
+	}
+}
+
+#define BUG_ON_(cond, msg...)			\
+do {						\
+	if (unlikely(cond)) {			\
+		syslog(LOG_ERR, "BUG: " ##msg);	\
+		die();				\
+	}					\
+} while (0)
+
 #ifdef _DEBUG_
 static inline void debug(char *msg, ...)
 {
@@ -61,7 +111,6 @@ static inline void debug(char *msg, ...)
 	va_start(vl, msg);
 	vfprintf(stderr, msg, vl);
 	va_end(vl);
-
 	fflush(stderr);
 }
 #else
