@@ -4,19 +4,15 @@ What libraries are required?
 To run netyack, you need:
  * libcelt
  * libspeexdsp
- * libjackd2
+ * libasound
 
 Under Debian simply type:
-# apt-get install libcelt0-0 libcelt-dev libspeexdsp1 libspeexdsp-dev jackd2 \
-                  libjack-jackd2-dev libjack-jackd2-0
+# apt-get install libcelt0-0 libcelt-dev       \
+                  libspeexdsp1 libspeexdsp-dev \
+                  libasound2-dev libasound2
 
 If the compiler somehow complains about not finding libspeexdsp1, try:
 # ln -s /usr/lib/libspeexdsp.so.1 /usr/lib/libspeexdsp.so
-
-Then run the JACK2 daemon if not already running, e.g. with:
-# jackd -d alsa
-
-Now you're ready to go yacking!
 
 Installation
 ============

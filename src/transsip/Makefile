@@ -1,25 +1,25 @@
 #
-# Makefile for netyack
+# Makefile for transsip
 # Author: Daniel Borkmann
 #
 
 include ../definitions.mk
 
-INCLUDE     = -I..
-LIBS        = -ljack -lpthread -ldl -lrt -lspeexdsp -lcelt0 -lm
+INCLUDE     = -I.. -I.
+LIBS        = -lspeexdsp -lasound -lcelt0 -lm
 
-core-objs   = netyack.o
+core-objs   = transsip.o
 lib-objs    = xmalloc.o		\
 	      strlcpy.o
 
-target      = netyack
+target      = transsip
 
-all: clean build doc
+all: clean gen-version build doc
 debug: all
 develop: all
 
-#gen-version:
-#	@cd .. && cat ../VERSION | xargs ./gen_build_info.pl
+gen-version:
+	@cd .. && cat ../VERSION | xargs ./gen_build_info.pl
 
 build: $(lib-objs) $(core-objs)
 	@$(LD) $(target) $(core-objs) $(all-objs) $(LIBS)
@@ -27,7 +27,7 @@ build: $(lib-objs) $(core-objs)
 
 doc:
 #	@cd ../../Documentation && make clean
-#	@cd ../../Documentation && make netyack
+#	@cd ../../Documentation && make transsip
 #	@cp ../../Documentation/man/* .
 #	@cp ../../Documentation/pdf/* .
 #	@cp ../../Documentation/html/* .
@@ -52,11 +52,11 @@ help:
 	@echo 'Cleaning targets:'
 	@echo '  clean           - Remove generated files'
 	@echo 'Building targets:'
-	@echo '  all             - Build netyack (default)'
-	@echo '  debug           - Build netyack for debugging _only_'
+	@echo '  all             - Build transsip (default)'
+	@echo '  debug           - Build transsip for debugging _only_'
 	@echo 'Setup targets:'
-	@echo '  install         - Install netyack'
-	@echo '  uninstall       - Uninstall netyack'
+	@echo '  install         - Install transsip'
+	@echo '  uninstall       - Uninstall transsip'
 	@echo 'Other targets:'
 	@echo '  help            - Print this help'
 
