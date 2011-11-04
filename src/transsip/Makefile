@@ -12,6 +12,7 @@ core-objs   = transsip.o
 lib-objs    = xmalloc.o		\
 	      dht.o		\
 	      stun.o		\
+	      alsa.o		\
 	      strlcpy.o
 
 target      = transsip

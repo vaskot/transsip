@@ -55,6 +55,11 @@ static inline void whine(char *msg, ...)
 	va_end(vl);
 }
 
+#define syslog_whine(msg...)		\
+do {					\
+	syslog(LOG_WARNING, ##msg);	\
+} while (0)
+
 static inline void info(char *msg, ...)
 {
 	va_list vl;
@@ -78,12 +83,6 @@ static inline void BUG(char *msg, ...)
 	die();
 }
 
-#define BUG_(msg...)			\
-do {					\
-	syslog(LOG_ERR, "BUG: " ##msg);	\
-	die();				\
-} while (0)
-
 static inline void BUG_ON(int cond, char *msg, ...)
 {
 	va_list vl;
@@ -95,14 +94,6 @@ static inline void BUG_ON(int cond, char *msg, ...)
 		die();
 	}
 }
-
-#define BUG_ON_(cond, msg...)			\
-do {						\
-	if (unlikely(!!(cond))) {		\
-		syslog(LOG_ERR, "BUG: " ##msg);	\
-		die();				\
-	}					\
-} while (0)
 
 #ifdef _DEBUG_
 static inline void debug(char *msg, ...)
