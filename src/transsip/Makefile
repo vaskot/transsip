@@ -6,10 +6,12 @@
 include ../definitions.mk
 
 INCLUDE     = -I.. -I.
-LIBS        = -lspeexdsp -lasound -lcelt0 -lm
+LIBS        = -lspeexdsp -lasound -lcelt0 -lm -lcrypt
 
 core-objs   = transsip.o
 lib-objs    = xmalloc.o		\
+	      dht.o		\
+	      stun.o		\
 	      strlcpy.o
 
 target      = transsip
