@@ -6,14 +6,16 @@
 include ../definitions.mk
 
 INCLUDE     = -I.. -I.
-LIBS        = -lspeexdsp -lasound -lcelt0 -lm
+LIBS        = -lspeexdsp -lasound -lcelt0 -lm -lreadline
 
 core-objs   = transsip.o
 lib-objs    = xmalloc.o		\
-	      dht.o		\
 	      stun.o		\
 	      alsa.o		\
+	      cli.o		\
 	      strlcpy.o
+
+#	      dht.o		\
 
 target      = transsip
 
@@ -25,7 +27,7 @@ gen-version:
 	@cd .. && cat ../VERSION | xargs ./gen_build_info.pl
 
 build: $(lib-objs) $(core-objs)
-	@$(LD) $(target) $(core-objs) $(all-objs) $(LIBS)
+	@$(LD) $(target) $(core-objs) $(lib-objs) $(LIBS)
 	@strip $(target)
 
 doc:

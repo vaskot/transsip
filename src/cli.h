@@ -6,17 +6,9 @@
  * Subject to the GPL, version 2.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
+#ifndef CLI_H
+#define CLI_H
 
-#include "version.h"
-#include "cli.h"
+extern void enter_shell_loop(void);
 
-int main(int argc, char **argv)
-{
-	enter_shell_loop();
-	return 0;
-}
+#endif /* CLI_H */

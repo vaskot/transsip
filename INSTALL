@@ -5,11 +5,13 @@ To run transsip, you need:
  * libcelt
  * libspeexdsp
  * libasound
+ * libreadline
 
 On Debian simply type:
 # apt-get install libcelt0-0 libcelt-dev        \
                   libspeexdsp1 libspeexdsp-dev  \
-                  libasound2-dev libasound2
+                  libasound2-dev libasound2	\
+		  libreadline6-dev libreadline6
 
 If the compiler somehow complains about not finding libspeexdsp1, try:
 # ln -s /usr/lib/libspeexdsp.so.1 /usr/lib/libspeexdsp.so
