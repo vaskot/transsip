@@ -35,7 +35,6 @@ static struct shell_cmd call_node[] = {
 };
 
 static struct shell_cmd show_node[] = {
-	{ "stun", cmd_help, "Show STUN probe result", NULL, },
 	{ "settings", cmd_help, "Show settings", NULL, },
 	{ "pubkey", cmd_help, "Show my public key", NULL, },
 	{ "contacts", cmd_help, "Show my contacts", NULL, },

@@ -16,6 +16,7 @@
 #include <ctype.h>
 
 #include "tty.h"
+#include "conf.h"
 #include "cli.h"
 #include "cli_cmds.h"
 #include "strlcpy.h"
@@ -29,13 +30,14 @@
 #define FETCH_ELEM  1
 
 static int exit_val = 0;
-static sig_atomic_t quit = 0;
+sig_atomic_t quit = 0;
+extern sig_atomic_t did_stun;
 
 static void fetch_user(char *user, size_t len)
 {
 	int ret = getlogin_r(user, len);
 	if (ret)
-		strlcpy(user, "tgsh", len);
+		strlcpy(user, "anon", len);
 	user[len - 1] = 0;
 }
 
@@ -263,7 +265,8 @@ void enter_shell_loop(void)
 
 	printf("\n%s%s%s shell\n\n", colorize_start(bold),
 	       PROGNAME_STRING " " VERSION_STRING, colorize_end());
-	print_stun_probe("stunserver.org", 3478, 6666);
+	print_stun_probe(get_stun_server(), 3478, get_port());
+	did_stun = 1;
 	fflush(stdout);
 
 	while (!quit) {
