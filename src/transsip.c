@@ -28,18 +28,35 @@
 #include "compiler.h"
 #include "die.h"
 #include "alsa.h"
+#include "xmalloc.h"
+
+#define MAX_MSG		1500
+#define SAMPLING_RATE	48000
+#define FRAME_SIZE	256
+#define PACKETSIZE	43
+#define CHANNELS	1
 
 static pthread_t ptid;
+
 static char *port = "30111";
 static char *stun_server = "stunserver.org";
+static char *alsadev = "plughw:0,0";
 
 extern sig_atomic_t quit;
 sig_atomic_t did_stun = 0;
 
 void *thread(void *null)
 {
-	int sock = -1, ret, mtu;
+	int sock = -1, ret, mtu, nfds, tmp;
 	struct addrinfo hints, *ahead, *ai;
+	struct pollfd *pfds;
+	struct alsa_dev *dev;
+	struct sched_param param;
+	CELTEncoder *encoder;
+	CELTDecoder *decoder;
+	CELTMode *mode;
+	JitterBuffer *jitter;
+	SpeexEchoState *echostate;
 
 	while (!did_stun)
 		;
@@ -87,9 +104,41 @@ void *thread(void *null)
 	if (sock < 0)
 		panic("Cannot open socket!\n");
 
-	while (likely(!quit))
-		;
+	dev = alsa_open(alsadev, SAMPLING_RATE, CHANNELS, FRAME_SIZE);
+	if (!dev)
+		panic("Cannot open ALSA device %s!\n", alsadev);
 
+	mode = celt_mode_create(SAMPLING_RATE, FRAME_SIZE, NULL);
+	encoder = celt_encoder_create(mode, CHANNELS, NULL);
+	decoder = celt_decoder_create(mode, CHANNELS, NULL);
+
+	param.sched_priority = sched_get_priority_min(SCHED_FIFO);
+	if (sched_setscheduler(0, SCHED_FIFO, &param))
+		whine("sched_setscheduler error!\n");
+
+	nfds = alsa_nfds(dev);
+	pfds = xmalloc(sizeof(*pfds) * (nfds + 1));
+	alsa_getfds(dev, pfds, nfds);
+	pfds[nfds].fd = sock;
+	pfds[nfds].events = POLLIN;
+
+	jitter = jitter_buffer_init(FRAME_SIZE);
+	tmp = FRAME_SIZE;
+	jitter_buffer_ctl(jitter, JITTER_BUFFER_SET_MARGIN, &tmp);
+
+	echostate = speex_echo_state_init(FRAME_SIZE, 10 * FRAME_SIZE);
+	tmp = SAMPLING_RATE;
+	speex_echo_ctl(echostate, SPEEX_ECHO_SET_SAMPLING_RATE, &tmp);
+
+	while (likely(!quit)) {
+		poll(pfds, nfds + 1, -1);
+		/* Auth */
+		/* Call alsa_start(dev) if correct auth */
+		/* Read out data ... */
+	}
+
+	xfree(pfds);
+	alsa_close(dev);
 	close(sock);
 	pthread_exit(0);
 }
