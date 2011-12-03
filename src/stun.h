@@ -11,6 +11,6 @@
 
 #include <stdint.h>
 
-extern void print_stun_probe(char *server, uint16_t sport, uint16_t tunport);
+extern void print_stun_probe(char *server, int sport, int tport);
 
 #endif /* STUN_H */

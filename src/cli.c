@@ -23,6 +23,7 @@
 #include "xmalloc.h"
 #include "signals.h"
 #include "compiler.h"
+#include "stun.h"
 
 #define FETCH_LIST  0
 #define FETCH_ELEM  1
@@ -54,7 +55,7 @@ static void setup_prompt(char *prompt, size_t len)
 	fetch_host(host, sizeof(host));
 
 	memset(prompt, 0, len);
-	slprintf(prompt, len, "%s@%s> ", user, host);
+	slprintf(prompt, len, "transsip://%s@%s> ", user, host);
 }
 
 static void find_list(struct shell_cmd **list, const char *token)
@@ -262,6 +263,7 @@ void enter_shell_loop(void)
 
 	printf("\n%s%s%s shell\n\n", colorize_start(bold),
 	       PROGNAME_STRING " " VERSION_STRING, colorize_end());
+	print_stun_probe("stunserver.org", 3478, 6666);
 	fflush(stdout);
 
 	while (!quit) {

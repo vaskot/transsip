@@ -29,30 +29,31 @@ struct shell_cmd {
 };
 
 static struct shell_cmd call_node[] = {
-	{ "ip", cmd_call_ip, "Call an IP directly.",  NULL, },
-	{ "peer", cmd_help, "Call a peer throught transsip DHT.",  NULL, },
+	{ "ip", cmd_call_ip, "Call an IP directly",  NULL, },
+	{ "peer", cmd_help, "Call a peer throught transsip DHT",  NULL, },
 	{ NULL, NULL, NULL, NULL, },
 };
 
 static struct shell_cmd show_node[] = {
-	{ "stun", cmd_help, "Show STUN probe result.", NULL, },
-	{ "pubkey", cmd_help, "Show my public key.", NULL, },
-	{ "contacts", cmd_help, "Show my contacts.", NULL, },
+	{ "stun", cmd_help, "Show STUN probe result", NULL, },
+	{ "settings", cmd_help, "Show settings", NULL, },
+	{ "pubkey", cmd_help, "Show my public key", NULL, },
+	{ "contacts", cmd_help, "Show my contacts", NULL, },
 	{ NULL, NULL, NULL, NULL, },
 };
 
 static struct shell_cmd import_node[] = {
-	{ "contact",  cmd_help, "Import a contact user/pubkey.",  NULL, },
+	{ "contact",  cmd_help, "Import a contact user/pubkey",  NULL, },
 	{ NULL, NULL, NULL, NULL, },
 };
 
 static struct shell_cmd cmd_tree[] = {
-	{ "help", cmd_help, "Show help.", NULL, },
-	{ "quit", cmd_quit, "Exit transsip shell.", NULL, },
-	{ "call", NULL, "Perform a call.", call_node, },
-	{ "take", cmd_help, "Take a call.", NULL, },
-	{ "show", NULL, "Show information.", show_node, },
-	{ "import", NULL, "Import things.", import_node, },
+	{ "help", cmd_help, "Show help", NULL, },
+	{ "quit", cmd_quit, "Exit transsip shell", NULL, },
+	{ "call", NULL, "Perform a call", call_node, },
+	{ "take", cmd_help, "Take a call", NULL, },
+	{ "show", NULL, "Show information", show_node, },
+	{ "import", NULL, "Import things", import_node, },
 	{ NULL, NULL, NULL, NULL, },
 };
 

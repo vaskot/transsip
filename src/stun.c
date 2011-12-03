@@ -104,8 +104,8 @@ struct stun_mapped_addr {
 	uint32_t ip;
 };
 
-static int stun_test(const char *server_ip, uint16_t server_port,
-		     uint16_t tun_port)
+static int stun_test(const char *server_ip, int server_port,
+		     int transsip_port)
 {
 	int ret, sock, set = 1;
 	uint8_t pkt[256];
@@ -131,7 +131,7 @@ static int stun_test(const char *server_ip, uint16_t server_port,
 		panic("Cannot set socket option!\n");
 
 	saddr.sin_family = PF_INET;
-	saddr.sin_port = htons(tun_port);
+	saddr.sin_port = htons(transsip_port);
 	saddr.sin_addr.s_addr = INADDR_ANY;
 
 	ret = bind(sock, (struct sockaddr *) &saddr, sizeof(saddr));
@@ -221,16 +221,16 @@ next:
 	return 0;
 }
 
-void print_stun_probe(char *server, uint16_t sport, uint16_t tunport)
+void print_stun_probe(char *server, int sport, int tport)
 {
 	char *address;
 	struct hostent *hp;
 
-	printf("STUN on %s:%u\n", server, sport);
+/*	printf("STUN on %s:%u\n", server, sport); */
 	srand(time(NULL));
 	hp = gethostbyname(server);
 	if (!hp)
 		return;
 	address = inet_ntoa(*(struct in_addr *) hp->h_addr_list[0]);
-	stun_test(address, sport, tunport);
+	stun_test(address, sport, tport);
 }
