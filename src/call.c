@@ -14,6 +14,7 @@
 #include "alsa.h"
 #include "die.h"
 #include "xmalloc.h"
+#include "strlcpy.h"
 
 int cmd_call_ip(char *arg)
 {

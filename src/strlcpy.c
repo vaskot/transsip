@@ -4,24 +4,7 @@
  * Copyright 2011 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
  * Swiss federal institute of technology (ETH Zurich)
  * Subject to the GPL, version 2.
- */
-
-/*
- * Copyright (C) 1991, 1992  Linus Torvalds
- *
- * This program is free software; you can redistribute it and/or modify 
- * it under the terms of the GNU General Public License as published by 
- * the Free Software Foundation; either version 2 of the License, or (at 
- * your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but 
- * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
- * for more details.
- *
- * You should have received a copy of the GNU General Public License along 
- * with this program; if not, write to the Free Software Foundation, Inc., 
- * 51 Franklin St, Fifth Floor, Boston, MA 02110, USA
+ * strlcpy: Copyright (C) 1991, 1992  Linus Torvalds, GPL, version 2
  */
 
 #define _BSD_SOURCE
@@ -30,6 +13,8 @@
 #include <stdarg.h>
 
 #include "strlcpy.h"
+#include "xmalloc.h"
+#include "die.h"
 
 size_t strlcpy(char *dest, const char *src, size_t size)
 {
@@ -51,5 +36,40 @@ int slprintf(char *dst, size_t size, const char *fmt, ...)
 	dst[size - 1] = '\0';
 	va_end(ap);
 	return ret;
+}
+
+char **strntoargv(char *str, size_t len, int *argc)
+{
+	int done = 0;
+	char **argv = NULL;
+	if (argc == NULL)
+		panic("argc is null!\n");
+	*argc = 0;
+	if (len <= 1) /* '\0' */
+		goto out;
+	while (!done) {
+		while (len > 0 && *str == ' ') {
+			len--;
+			str++;
+		}
+		if (len > 0 && *str != '\0') {
+			(*argc)++;
+			argv = xrealloc(argv, 1, sizeof(char *) * (*argc));
+			argv[(*argc) - 1] = str;
+			while (len > 0 && *str != ' ') {
+				len--;
+				str++;
+			}
+			if (len > 0 && *str == ' ') {
+				len--;
+				*str = '\0';
+				str++;
+			}
+		} else {
+			done = 1;
+		}
+	}
+out:
+	return argv;
 }
 

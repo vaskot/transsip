@@ -11,5 +11,6 @@
 
 extern size_t strlcpy(char *dest, const char *src, size_t size);
 extern int slprintf(char *dst, size_t size, const char *fmt, ...);
+extern char **strntoargv(char *str, size_t len, int *argc);
 
 #endif /* STRLCPY_H */

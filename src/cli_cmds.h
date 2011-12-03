@@ -11,9 +11,6 @@
 
 #include <readline/readline.h>
 
-#include "xmalloc.h"
-#include "die.h"
-
 #define MAX_MENU_ELEMS 100
 
 extern int cmd_help(char *args);
@@ -55,41 +52,6 @@ static struct shell_cmd cmd_tree[] = {
 	{ "import", NULL, "Import things", import_node, },
 	{ NULL, NULL, NULL, NULL, },
 };
-
-static inline char **strntoargv(char *str, size_t len, int *argc)
-{
-	int done = 0;
-	char **argv = NULL;
-	if (argc == NULL)
-		panic("argc is null!\n");
-	*argc = 0;
-	if (len <= 1) /* '\0' */
-		goto out;
-	while (!done) {
-		while (len > 0 && *str == ' ') {
-			len--;
-			str++;
-		}
-		if (len > 0 && *str != '\0') {
-			(*argc)++;
-			argv = xrealloc(argv, 1, sizeof(char *) * (*argc));
-			argv[(*argc) - 1] = str;
-			while (len > 0 && *str != ' ') {
-				len--;
-				str++;
-			}
-			if (len > 0 && *str == ' ') {
-				len--;
-				*str = '\0';
-				str++;
-			}
-		} else {
-			done = 1;
-		}
-	}
-out:
-	return argv;
-}
 
 #endif /* CLI_CMDS_H */
 
