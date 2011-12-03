@@ -15,9 +15,11 @@
 #include <readline/history.h>
 #include <ctype.h>
 
+#include "tty.h"
 #include "cli.h"
 #include "cli_cmds.h"
 #include "strlcpy.h"
+#include "version.h"
 #include "xmalloc.h"
 #include "signals.h"
 #include "compiler.h"
@@ -88,7 +90,6 @@ static struct shell_cmd *find_elem(struct shell_cmd *list, const char *token)
 
 	return elem;
 }
-
 
 static char *get_next_token(char *line, int *off)
 {
@@ -223,7 +224,7 @@ void clear_term(int signal)
 
 static void setup_readline(void)
 {
-	rl_readline_name = "tgsh";
+	rl_readline_name = "transsip";
 	rl_completion_entry_function = cmd_completion;
 	rl_catch_signals = 0;
 	rl_catch_sigwinch = 1;
@@ -259,7 +260,8 @@ void enter_shell_loop(void)
 	setup_prompt(prompt, prompt_len);
 	setup_readline();
 
-	printf("\ntranssip shell\n\n");
+	printf("\n%s%s%s shell\n\n", colorize_start(bold),
+	       PROGNAME_STRING " " VERSION_STRING, colorize_end());
 	fflush(stdout);
 
 	while (!quit) {
@@ -300,12 +302,6 @@ int cmd_help(char *args) {
 	return 0;
 }
 
-/* XXX test only */
-int cmd_yack(char *args) {
-	printf("yack + %s\n", args);
-	return 0;
-}
-
 int cmd_quit(char *args) {
 	quit = 1;
 	return 0;
@@ -315,3 +311,4 @@ int cmd_stat(char *args) {
 	printf("%d\n", exit_val);
 	return 0;
 }
+

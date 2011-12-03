@@ -11,14 +11,15 @@
 
 #include <readline/readline.h>
 
+#include "xmalloc.h"
+#include "die.h"
+
 #define MAX_MENU_ELEMS 100
 
 extern int cmd_help(char *args);
 extern int cmd_quit(char *args);
 extern int cmd_stat(char *args);
-extern int cmd_yack(char *args);
-
-static inline int show_config(char *args) { return 0; }
+extern int cmd_call_ip(char *args);
 
 struct shell_cmd {
 	char *name;
@@ -27,26 +28,68 @@ struct shell_cmd {
 	struct shell_cmd *sub_cmd;
 };
 
-struct shell_cmd call_node[] = {
-	{ "sip",  cmd_help, "Make a SIP call.",  NULL, },
-	{ "yack", cmd_yack, "Make a yack call.", NULL, },
+static struct shell_cmd call_node[] = {
+	{ "ip", cmd_call_ip, "Call an IP directly.",  NULL, },
+	{ "peer", cmd_help, "Call a peer throught transsip DHT.",  NULL, },
 	{ NULL, NULL, NULL, NULL, },
 };
 
-struct shell_cmd show_node[] = {
-	{ "stun", cmd_help,          "Show STUN probe result.", NULL, },
-	{ "conf", show_config, "Show parsed config.",     NULL, },
+static struct shell_cmd show_node[] = {
+	{ "stun", cmd_help, "Show STUN probe result.", NULL, },
+	{ "pubkey", cmd_help, "Show my public key.", NULL, },
+	{ "contacts", cmd_help, "Show my contacts.", NULL, },
 	{ NULL, NULL, NULL, NULL, },
 };
 
-struct shell_cmd cmd_tree[] = {
-	{ "help", cmd_help, "Show help.",          NULL, },
-	{ "quit", cmd_quit, "Exit netyack shell.", NULL, },
-	{ "ret",  cmd_stat, "Show return status.", NULL, },
-	{ "call", NULL,     "Perform a call.",     call_node, },
-	{ "take", cmd_stat, "Take a call.",        NULL, },
-	{ "show", NULL,     "Show information.",   show_node, },
+static struct shell_cmd import_node[] = {
+	{ "contact",  cmd_help, "Import a contact user/pubkey.",  NULL, },
 	{ NULL, NULL, NULL, NULL, },
 };
+
+static struct shell_cmd cmd_tree[] = {
+	{ "help", cmd_help, "Show help.", NULL, },
+	{ "quit", cmd_quit, "Exit transsip shell.", NULL, },
+	{ "call", NULL, "Perform a call.", call_node, },
+	{ "take", cmd_help, "Take a call.", NULL, },
+	{ "show", NULL, "Show information.", show_node, },
+	{ "import", NULL, "Import things.", import_node, },
+	{ NULL, NULL, NULL, NULL, },
+};
+
+static inline char **strntoargv(char *str, size_t len, int *argc)
+{
+	int done = 0;
+	char **argv = NULL;
+	if (argc == NULL)
+		panic("argc is null!\n");
+	*argc = 0;
+	if (len <= 1) /* '\0' */
+		goto out;
+	while (!done) {
+		while (len > 0 && *str == ' ') {
+			len--;
+			str++;
+		}
+		if (len > 0 && *str != '\0') {
+			(*argc)++;
+			argv = xrealloc(argv, 1, sizeof(char *) * (*argc));
+			argv[(*argc) - 1] = str;
+			while (len > 0 && *str != ' ') {
+				len--;
+				str++;
+			}
+			if (len > 0 && *str == ' ') {
+				len--;
+				*str = '\0';
+				str++;
+			}
+		} else {
+			done = 1;
+		}
+	}
+out:
+	return argv;
+}
 
 #endif /* CLI_CMDS_H */
+

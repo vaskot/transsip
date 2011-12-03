@@ -13,9 +13,10 @@ lib-objs    = xmalloc.o		\
 	      stun.o		\
 	      alsa.o		\
 	      cli.o		\
+	      call.o		\
 	      strlcpy.o
 
-#	      dht.o		\
+#     dht.o		\
 
 target      = transsip
 
