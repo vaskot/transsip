@@ -45,21 +45,35 @@ static char *alsadev = "plughw:0,0";
 extern sig_atomic_t quit;
 sig_atomic_t did_stun = 0;
 
-void *thread(void *null)
+static struct pollfd *pfds = NULL;
+static struct alsa_dev *dev = NULL;
+static CELTEncoder *encoder = NULL;
+static CELTDecoder *decoder = NULL;
+static JitterBuffer *jitter = NULL;
+static SpeexEchoState *echostate = NULL;
+
+void call_out(char *host, char *port)
+{
+	/* send notify */
+	/* wait for accept */
+	/* transfer data */
+}
+
+void call_in(int take)
+{
+	/* lookup addrbook */
+	/* send notify */
+	/* transfer data */
+}
+
+static void *thread(void *null)
 {
 	int sock = -1, ret, mtu, nfds, tmp;
 	struct addrinfo hints, *ahead, *ai;
-	struct pollfd *pfds;
-	struct alsa_dev *dev;
-	struct sched_param param;
-	CELTEncoder *encoder;
-	CELTDecoder *decoder;
 	CELTMode *mode;
-	JitterBuffer *jitter;
-	SpeexEchoState *echostate;
 
-	while (!did_stun)
-		;
+	while (did_stun == 0)
+		barrier();
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_UNSPEC;
@@ -112,10 +126,6 @@ void *thread(void *null)
 	encoder = celt_encoder_create(mode, CHANNELS, NULL);
 	decoder = celt_decoder_create(mode, CHANNELS, NULL);
 
-	param.sched_priority = sched_get_priority_min(SCHED_FIFO);
-	if (sched_setscheduler(0, SCHED_FIFO, &param))
-		whine("sched_setscheduler error!\n");
-
 	nfds = alsa_nfds(dev);
 	pfds = xmalloc(sizeof(*pfds) * (nfds + 1));
 	alsa_getfds(dev, pfds, nfds);
@@ -131,10 +141,14 @@ void *thread(void *null)
 	speex_echo_ctl(echostate, SPEEX_ECHO_SET_SAMPLING_RATE, &tmp);
 
 	while (likely(!quit)) {
-		poll(pfds, nfds + 1, -1);
-		/* Auth */
-		/* Call alsa_start(dev) if correct auth */
-		/* Read out data ... */
+		ret = poll(&pfds[nfds], 1, -1);
+		if (ret < 0)
+			panic("Poll returned with %d!\n", ret);
+		if (pfds[nfds].revents & POLLIN) {
+			/* Check for Auth, if yes, set current caller and notifiy cli */
+			/* cli user must call take, that triggers call_in() */
+			printf(".\n");
+		}
 	}
 
 	xfree(pfds);
@@ -143,14 +157,14 @@ void *thread(void *null)
 	pthread_exit(0);
 }
 
-void start_server(void)
+static void start_server(void)
 {
 	int ret = pthread_create(&ptid, NULL, thread, NULL);
 	if (ret)
 		panic("Cannot create server thread!\n");
 }
 
-void stop_server(void)
+static void stop_server(void)
 {
 /*	pthread_join(ptid, NULL);*/
 }

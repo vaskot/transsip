@@ -267,6 +267,7 @@ void enter_shell_loop(void)
 	       PROGNAME_STRING " " VERSION_STRING, colorize_end());
 	print_stun_probe(get_stun_server(), 3478, get_port());
 	did_stun = 1;
+	barrier();
 	fflush(stdout);
 
 	while (!quit) {
@@ -289,7 +290,8 @@ void enter_shell_loop(void)
 	printf("\n");
 }
 
-int cmd_help(char *args) {
+int cmd_help(char *args)
+{
 	struct shell_cmd *cmd;
 	int i, entries = (sizeof(cmd_tree) / sizeof(cmd_tree[0])) - 1;
 
@@ -307,13 +309,28 @@ int cmd_help(char *args) {
 	return 0;
 }
 
-int cmd_quit(char *args) {
+int cmd_quit(char *args)
+{
 	quit = 1;
 	return 0;
 }
 
-int cmd_stat(char *args) {
+int cmd_stat(char *args)
+{
 	printf("%d\n", exit_val);
+	return 0;
+}
+
+int cmd_call_ip(char *arg)
+{
+	int argc, i;
+	char **argv = strntoargv(arg, strlen(arg), &argc);
+	if (argc != 2) {
+		printf("Missing arguments: call ip <ipv4/ipv6/host> <port>\n");
+		return -EINVAL;
+	}
+	call_out(argv[0], argv[1]);
+	xfree(argv);
 	return 0;
 }
 

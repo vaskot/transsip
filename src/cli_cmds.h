@@ -13,6 +13,9 @@
 
 #define MAX_MENU_ELEMS 100
 
+extern void call_out(char *host, char *port);
+extern void call_in(int take);
+
 extern int cmd_help(char *args);
 extern int cmd_quit(char *args);
 extern int cmd_stat(char *args);

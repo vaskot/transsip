@@ -13,8 +13,6 @@
 #include <sys/poll.h>
 #include <alsa/asoundlib.h>
 
-#include "alsa.h"
-
 struct alsa_dev;
 
 extern struct alsa_dev *alsa_open(char *devname, unsigned int rate,

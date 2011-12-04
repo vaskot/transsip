@@ -13,7 +13,6 @@ lib-objs    = xmalloc.o		\
 	      stun.o		\
 	      alsa.o		\
 	      cli.o		\
-	      call.o		\
 	      curve.o		\
 	      mtrand.o		\
 	      write_or_die.o	\
