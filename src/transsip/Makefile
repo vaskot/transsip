@@ -5,8 +5,8 @@
 
 include ../definitions.mk
 
-INCLUDE     = -I.. -I.
-LIBS        = -lspeexdsp -lasound -lcelt0 -lm -lreadline -lpthread
+INCLUDE     = -I.. -I./include/
+LIBS        = ./nacl/libnacl.a -lspeexdsp -lasound -lcelt0 -lm -lreadline -lpthread
 
 core-objs   = transsip.o
 lib-objs    = xmalloc.o		\
@@ -14,18 +14,22 @@ lib-objs    = xmalloc.o		\
 	      alsa.o		\
 	      cli.o		\
 	      call.o		\
+	      curve.o		\
+	      mtrand.o		\
 	      strlcpy.o
-
 #     dht.o		\
 
 target      = transsip
 
-all: clean gen-version build doc
+all: clean gen-version build-nacl build doc
 debug: all
 develop: all
 
 gen-version:
 	@cd .. && cat ../VERSION | xargs ./gen_build_info.pl
+
+build-nacl:
+	@sh ./nacl.sh
 
 build: $(lib-objs) $(core-objs)
 	@$(LD) $(target) $(core-objs) $(lib-objs) $(LIBS)
@@ -40,6 +44,9 @@ doc:
 
 %.o: ../%.c
 	@$(CC) $(CFLAGS) $(INCLUDE) $<
+
+clean-nacl:
+	@rm -rf ./nacl/ ./tmp/ ./include/
 
 clean:
 	@rm *.o *~ $(target) ../version.h *.gz *.pdf *.html *.8 *.css  \
