@@ -44,6 +44,7 @@ static char *alsadev = "plughw:0,0";
 
 extern sig_atomic_t quit;
 sig_atomic_t did_stun = 0;
+static sig_atomic_t incoming_call = 0;
 
 static struct pollfd *pfds = NULL;
 static struct alsa_dev *dev = NULL;
@@ -52,11 +53,101 @@ static CELTDecoder *decoder = NULL;
 static JitterBuffer *jitter = NULL;
 static SpeexEchoState *echostate = NULL;
 
+static void do_call_duplex(void)
+{
+#if 0
+	int ret, recv_started = 0;
+
+	alsa_start(dev);
+	while (likely(!quit)) {
+		ret = poll(pfds, nfds + 1, -1);
+		if (ret < 0)
+			panic("Poll returned with %d!\n", ret);
+
+		/* Received packets */
+		if (pfds[nfds].revents & POLLIN) {
+			n = recv(sd, msg, MAX_MSG, 0);
+			int recv_timestamp = ((int*) msg)[0];
+
+			JitterBufferPacket packet;
+			packet.data = msg + 4;
+			packet.len = n - 4;
+			packet.timestamp = recv_timestamp;
+			packet.span = FRAME_SIZE;
+			packet.sequence = 0;
+
+			jitter_buffer_put(jitter, &packet);
+			recv_started = 1;
+		}
+
+		/* Ready to play a frame (playback) */
+		if (alsa_play_ready(dev, pfds, nfds)) {
+			short pcm[FRAME_SIZE * CHANNELS];
+			if (recv_started) {
+				JitterBufferPacket packet;
+				/* Get audio from the jitter buffer */
+				packet.data = msg;
+				packet.len  = MAX_MSG;
+				jitter_buffer_tick(jitter);
+				jitter_buffer_get(jitter, &packet, FRAME_SIZE,
+						  NULL);
+				if (packet.len == 0)
+					packet.data=NULL;
+				celt_decode(dec_state, (const unsigned char *)
+					    packet.data, packet.len, pcm);
+			} else {
+				for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
+					pcm[i] = 0;
+			}
+
+			/* Playback the audio and reset the echo canceller
+			   if we got an underrun */
+
+			if (alsa_write(dev, pcm, FRAME_SIZE)) 
+				speex_echo_state_reset(echo_state);
+			/* Put frame into playback buffer */
+			speex_echo_playback(echo_state, pcm);
+		}
+
+		/* Audio available from the soundcard (capture) */
+		if (alsa_cap_ready(dev, pfds, nfds)) {
+			short pcm[FRAME_SIZE * CHANNELS],
+			      pcm2[FRAME_SIZE * CHANNELS];
+			char outpacket[MAX_MSG];
+
+			alsa_read(dev, pcm, FRAME_SIZE);
+
+			/* Perform echo cancellation */
+			speex_echo_capture(echo_state, pcm, pcm2);
+			for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
+				pcm[i] = pcm2[i];
+
+			celt_encode(enc_state, pcm, NULL, (unsigned char *)
+				    (outpacket + 4), PACKETSIZE);
+
+			/* Pseudo header: four null bytes and a 32-bit
+			   timestamp */
+			((int*)outpacket)[0] = send_timestamp;
+			send_timestamp += FRAME_SIZE;
+
+			rc = sendto(sd, outpacket, PACKETSIZE + 4, 0,
+				    (struct sockaddr *) &remote_addr,
+				    sizeof(remote_addr));
+			if (rc < 0)
+				panic("cannot send to socket");
+		}
+	}
+#endif
+}
+
 void call_out(char *host, char *port)
 {
 	/* send notify */
 	/* wait for accept */
 	/* transfer data */
+
+	printf("Trying to call %s:%s ...\n", host, port);
+	do_call_duplex();
 }
 
 void call_in(int take)
@@ -64,6 +155,15 @@ void call_in(int take)
 	/* lookup addrbook */
 	/* send notify */
 	/* transfer data */
+
+	barrier();
+	if (incoming_call == 0) {
+		printf("No incoming call right now!\n");
+		return;
+	}
+
+	printf("Trying to take incoming call ...\n");
+	do_call_duplex();
 }
 
 static void *thread(void *null)
@@ -145,7 +245,7 @@ static void *thread(void *null)
 		if (ret < 0)
 			panic("Poll returned with %d!\n", ret);
 		if (pfds[nfds].revents & POLLIN) {
-			/* Check for Auth, if yes, set current caller and notifiy cli */
+			/* Check for Auth pkt, if yes, set current caller and notifiy cli */
 			/* cli user must call take, that triggers call_in() */
 			printf(".\n");
 		}

@@ -334,3 +334,9 @@ int cmd_call_ip(char *arg)
 	return 0;
 }
 
+int cmd_take(char *arg)
+{
+	call_in(1);
+	return 0;
+}
+

@@ -20,6 +20,7 @@ extern int cmd_help(char *args);
 extern int cmd_quit(char *args);
 extern int cmd_stat(char *args);
 extern int cmd_call_ip(char *args);
+extern int cmd_take(char *arg);
 
 struct shell_cmd {
 	char *name;
@@ -50,7 +51,7 @@ static struct shell_cmd cmd_tree[] = {
 	{ "help", cmd_help, "Show help", NULL, },
 	{ "quit", cmd_quit, "Exit transsip shell", NULL, },
 	{ "call", NULL, "Perform a call", call_node, },
-	{ "take", cmd_help, "Take a call", NULL, },
+	{ "take", cmd_take, "Take a call", NULL, },
 	{ "show", NULL, "Show information", show_node, },
 	{ "import", NULL, "Import things", import_node, },
 	{ NULL, NULL, NULL, NULL, },
