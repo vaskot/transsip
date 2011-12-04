@@ -24,7 +24,7 @@ transsip is to provide a free, open source solution for privacy-preserving
 voice-over-IP telecommunication that is independant of a third party.
 
 Why transsip [1]? There are a few available voice-over-IP solutions out there
-such as Skype. However, most of the are proprietary, so that we are not able
+such as Skype. However, most of them are proprietary, so that we are not able
 to know if there are hidden backdoors included, or use a weak encryption or no
 encryption at all. Also, some of the existing solutions route voice traffic
 through their private servers and use these data for other purposes. Therefore
