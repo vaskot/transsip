@@ -5,7 +5,7 @@
 
 # For mem debugging add -D_DEBUG_
 LD_NORM      = echo "LD        $(target)";    \
-               gcc -pie -z relo
+               gcc
 CC_NORM      = echo "CC        $<";           \
                gcc
 CC_DEBUG     = echo "DC        $<";           \

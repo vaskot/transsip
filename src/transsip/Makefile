@@ -16,6 +16,7 @@ lib-objs    = xmalloc.o		\
 	      call.o		\
 	      curve.o		\
 	      mtrand.o		\
+	      write_or_die.o	\
 	      strlcpy.o
 #     dht.o		\
 
@@ -66,7 +67,6 @@ help:
 	@echo '  clean           - Remove generated files'
 	@echo 'Building targets:'
 	@echo '  all             - Build transsip (default)'
-	@echo '  debug           - Build transsip for debugging _only_'
 	@echo 'Setup targets:'
 	@echo '  install         - Install transsip'
 	@echo '  uninstall       - Uninstall transsip'

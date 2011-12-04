@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "compiler.h"
 #include "xmalloc.h"
@@ -23,7 +24,7 @@
 #include "strlcpy.h"
 #include "die.h"
 #include "mtrand.h"
-#include "curvetun.h"
+#include "conf.h"
 #include "locking.h"
 #include "crypto_verify_32.h"
 #include "crypto_box_curve25519xsalsa20poly1305.h"

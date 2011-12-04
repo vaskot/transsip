@@ -110,4 +110,17 @@ static inline void debug(char *msg, ...)
 	/* NOP */
 }
 #endif /* _DEBUG_ */
+
+static inline void puke_and_die(int status, char *msg, ...)
+{
+	va_list vl;
+	va_start(vl, msg);
+	vfprintf(stderr, msg, vl);
+	va_end(vl);
+
+	fprintf(stderr, ": %s\n", strerror(errno));
+
+	exit(status);
+}
+
 #endif /* DIE_H */

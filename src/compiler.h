@@ -9,6 +9,9 @@
 #ifndef COMPILER_H
 #define COMPILER_H
 
+#ifndef __aligned_16
+# define __aligned_16       __attribute__((aligned(16)))
+#endif
 #ifndef likely
 # define likely(x)          __builtin_expect(!!(x), 1)
 #endif
