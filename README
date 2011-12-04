@@ -1,3 +1,52 @@
+//////////////////////////////////////////////////////////////////////////////
 
-   transsip telephony network
+                        transsip telephony network
+
+\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+ transsip is a toolkit for creating a peer-to-peer overlay network for
+ strongly encrypted, privacy-preserving voice-over-IP telecommunication.
+
+      ("`-''-/").___..--''"`-._            Release: 2012-xx-xx
+       `6_ 6  )   `-.  (     ).`-.__.`)
+       (_Y_.)'  ._   )  `._ `. ``-..-'     Web: http://transsip.org
+     _..`--'_..-_/  /--'_.' ,'                       ___
+    (il),-''--(li),'--((!.-'---.<priv:1011010110>--=|___E
+   (                       ___
+    \_.<pub:0101010011>--=|___E
+
+The transsip telephony network uses a high-speed ECDH mechanism (Curve25519)
+to protect voice data on end-to-end. Moreover, it uses the low-latency CELT
+codec on top of ALSA for encoding and decoding the audio channel. Participants
+can perform a direct IP-to-IP call or do a lookup of their communication
+partner through the transsip Kademlia distributed hash table. The aim of
+transsip is to provide a free, open source solution for privacy-preserving
+voice-over-IP telecommunication that is independant of a third party.
+
+Why transsip [1]? There are a few available voice-over-IP solutions out there
+such as Skype. However, most of the are proprietary, so that we are not able
+to know if there are hidden backdoors included, or use a weak encryption or no
+encryption at all. Also, some of the existing solutions route voice traffic
+through their private servers and use these data for other purposes. Therefore
+our software closes this gap of an open source solution to preserve users privacy.
+
+The transsip toolkit is an open source project covered by the GNU General
+Public License. For any questions or feedback about transsip you are welcome
+to leave us a message to <workgroup@transsip.org> or to our mailing list
+at <transsip@googlegroups.com> (Note: you have to register first). This
+project is purely non-commercial and will always stay that way!
+
+Also, have a look at our FAQ [2] for answering your questions. Furthermore,
+we have a development blog [3] where we sometimes drop some interesting things
+or news for the outside world! A public repository of the old stable releases
+(which you probably do not want to have a look at), can be found here [4].
+
+You might want to have a look at INSTALL, REPORTING-BUGS, HACKING, CODING,
+and COPYING, too. We would be happy for patches, reviews and more. Anyways,
+enough talking from my side and happy talking via transsip!
+
+[1] http://transsip.org/
+[2] http://transsip.org/faq.html
+[3] http://dev.transsip.org/
+[4] http://pub.transsip.org/
 
