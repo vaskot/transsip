@@ -6,6 +6,7 @@ To run transsip, you need:
  * libspeexdsp
  * libasound
  * libreadline
+ * libpthread / libc
 
 On Debian simply type:
 # apt-get install libcelt0-0 libcelt-dev        \
@@ -23,12 +24,14 @@ to place calls.
 Installation
 ============
 
+$ cd transsip/src/transsip/
 $ make
 # make install
 
 Uninstall
 =========
 
+$ cd transsip/src/transsip/
 # make uninstall
 $ make clean
 
