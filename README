@@ -24,11 +24,14 @@ transsip is to provide a free, open source solution for privacy-preserving
 voice-over-IP telecommunication that is independant of a third party.
 
 Why transsip [1]? There are a few available voice-over-IP solutions out there
-such as Skype. However, most of them are proprietary, so that we are not able
-to know if there are hidden backdoors included, or use a weak encryption or no
-encryption at all. Also, some of the existing solutions route voice traffic
-through their private servers and use these data for other purposes. Therefore
-our software closes this gap of an open source solution to preserve users privacy.
+such as Skype [2]. However, most of them are proprietary, so that we are not
+able to know if there are hidden backdoors included, or use a weak encryption
+or no encryption at all. And as you see from Skype's analysis, there cannot
+come anything good from that software. We do not only want to blame Skype,
+but there's lots of such crap out there that cannot be trusted. Also, some of
+the existing solutions route voice traffic through their private servers and
+use these data for other purposes. Therefore our software closes this gap of
+an open source solution to preserve users privacy.
 
 The transsip toolkit is an open source project covered by the GNU General
 Public License. For any questions or feedback about transsip you are welcome
@@ -36,17 +39,18 @@ to leave us a message to <workgroup@transsip.org> or to our mailing list
 at <transsip@googlegroups.com> (Note: you have to register first). This
 project is purely non-commercial and will always stay that way!
 
-Also, have a look at our FAQ [2] for answering your questions. Furthermore,
-we have a development blog [3] where we sometimes drop some interesting things
+Also, have a look at our FAQ [3] for answering your questions. Furthermore,
+we have a development blog [4] where we sometimes drop some interesting things
 or news for the outside world! A public repository of the old stable releases
-(which you probably do not want to have a look at), can be found here [4].
+(which you probably do not want to have a look at), can be found here [5].
 
 You might want to have a look at INSTALL, REPORTING-BUGS, HACKING, CODING,
 and COPYING, too. We would be happy for patches, reviews and more. Anyways,
 enough talking from my side and happy talking via transsip!
 
 [1] http://transsip.org/
-[2] http://transsip.org/faq.html
-[3] http://dev.transsip.org/
-[4] http://pub.transsip.org/
+[2] http://www.blackhat.com/presentations/bh-europe-06/bh-eu-06-biondi/bh-eu-06-biondi-up.pdf
+[3] http://transsip.org/faq.html
+[4] http://dev.transsip.org/
+[5] http://pub.transsip.org/
 
