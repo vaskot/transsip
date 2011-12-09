@@ -4,6 +4,28 @@
  * Copyright 2011 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
  * Swiss federal institute of technology (ETH Zurich)
  * Subject to the GPL, version 2.
+ *
+ * This is transsip, a minimalistic, high-speed ECDH peer-to-peer telephony
+ * network. It supports IPv4 and IPv6. As an appropriate key management,
+ * public-key cryptography based on elliptic curves are being used and
+ * packets are encrypted by a symmetric stream cipher (Salsa20) and
+ * authenticated by a MAC (Poly1305), where keys have previously been
+ * computed with the ECDH key agreement protocol (Curve25519). Cryptography 
+ * is based on Daniel J. Bernsteins Networking and Cryptography library (NaCl).
+ * Our motivation: Privacy is necessary for an open society in the electronic
+ * age. Privacy is not secrecy. A private matter is something one doesn't
+ * want the whole world to know, but a secret matter is something one doesn't
+ * want anybody to know. Privacy is the power to selectively reveal oneself
+ * to the world. [...] We must defend our own privacy if we expect to have any.
+ * 
+ *   Let folly be our cloak, a veil before the eyes of the Enemy! For he is
+ *   very wise, and weighs all things to a nicety in the scales of his malice.
+ *   But the only measure that he knows is desire, desire for power; and so he
+ *   judges all hearts. Into his heart the thought will not enter that any will
+ *   refuse it, that having the Ring we may seek to destroy it. If we seek this,
+ *   we shall put him out of reckoning.
+ *
+ *     -- The Lord of the Rings, Gandalf, Chapter 'The Council of Elrond'.
  */
 
 #include <stdio.h>
