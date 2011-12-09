@@ -302,6 +302,8 @@ static int keygen(char *home)
 	printf(" port <your-transsip-port>\n");
 	printf(" stun stunserver.org\n");
 	printf(" alsa plughw:0,0\n");
+	printf("To add contacts, add a new line into .transsip/contacts with:\n");
+	printf(" <user> <pubkey>\n");
 	return 0;
 }
 
@@ -604,7 +606,6 @@ int show_key_export(char *home)
 	int fd, i;
 	ssize_t ret;
 	char path[PATH_MAX], tmp[64];
-	check_config_exists_or_die(home);
 	check_config_keypair_or_die(home);
 	printf("Your public peer information:\n ");
 	fflush(stdout);
