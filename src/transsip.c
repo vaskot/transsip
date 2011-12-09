@@ -26,6 +26,7 @@
 #include <sched.h>
 
 #include "conf.h"
+#include "version.h"
 #include "curve.h"
 #include "compiler.h"
 #include "die.h"
@@ -498,6 +499,44 @@ static void stop_server(void)
 /*	pthread_join(ptid, NULL);*/
 }
 
+static void help(void)
+{
+	printf("\ntranssip %s, peer-to-peer elliptic-curve-crypto-based "
+	       "telephony network\n", VERSION_STRING);
+	printf("http://www.transsip.org\n\n");
+	printf("Usage: transsip [options]\n");
+	printf("Options:\n");
+	printf("  -k|--keygen             Generate public/private keypair\n");
+	printf("  -v|--version            Show version\n");
+	printf("  -h|--help               Guess what?!\n\n");
+	printf("Note:\n");
+	printf("  There is no default port specified, so that you are forced\n");
+	printf("  to select your own!\n");
+	printf("\n");
+	printf("Secret ingredient: 7647-14-5\n");
+	printf("\n");
+	printf("Please report bugs to <bugs@transsip.org>\n");
+	printf("Copyright (C) 2011 Daniel Borkmann <daniel@transsip.org>,\n");
+	printf("License: GNU GPL version 2\n");
+	printf("This is free software: you are free to change and redistribute it.\n");
+	printf("There is NO WARRANTY, to the extent permitted by law.\n\n");
+	die();
+}
+
+static void version(void)
+{
+	printf("\ntranssip %s, peer-to-peer elliptic-curve-crypto-based "
+	       "telephony network\n", VERSION_STRING);
+	printf("Build: %s\n", BUILD_STRING);
+	printf("http://www.transsip.org\n\n");
+	printf("Please report bugs to <bugs@transsip.org>\n");
+	printf("Copyright (C) 2011 Daniel Borkmann <daniel@transsip.org>,\n");
+	printf("License: GNU GPL version 2\n");
+	printf("This is free software: you are free to change and redistribute it.\n");
+	printf("There is NO WARRANTY, to the extent permitted by law.\n\n");
+	die();
+}
+
 int main(int argc, char **argv)
 {
 	char *home = fetch_home_dir();
@@ -508,11 +547,18 @@ int main(int argc, char **argv)
 	if (ptrace(PTRACE_TRACEME, 0, 1, 0) < 0)
 		panic("transsip cannot be ptraced!\n");
 	curve25519_selftest();
-	if (argc == 2 && !strncmp("--keygen", argv[1], strlen("--keygen"))) {
+	if (argc == 2 && (!strncmp("-k", argv[1], strlen("-k")) ||
+			  !strncmp("--keygen", argv[1], strlen("--keygen")))) {
 		keygen(home);
 		show_key_export(home);
 		return 0;
 	}
+	if (argc == 2 && (!strncmp("-v", argv[1], strlen("-v")) ||
+			  !strncmp("--version", argv[1], strlen("--version"))))
+		version();
+	if (argc == 2 && (!strncmp("-h", argv[1], strlen("-h")) ||
+			  !strncmp("--help", argv[1], strlen("--help"))))
+		help();
 	check_config_exists_or_die(home);
 	check_config_keypair_or_die(home);
 	start_server();
@@ -538,7 +584,7 @@ int show_key_export(char *home)
 	char path[PATH_MAX], tmp[64];
 	check_config_exists_or_die(home);
 	check_config_keypair_or_die(home);
-	printf("Your public information:\n ");
+	printf("Your public peer information:\n ");
 	fflush(stdout);
 	memset(path, 0, sizeof(path));
 	slprintf(path, sizeof(path), "%s/%s", home, FILE_USERNAME);
