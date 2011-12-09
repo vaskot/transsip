@@ -17,7 +17,6 @@
 
 #include "tty.h"
 #include "conf.h"
-#include "cli.h"
 #include "clicmds.h"
 #include "version.h"
 #include "xmalloc.h"

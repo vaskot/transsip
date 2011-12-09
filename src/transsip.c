@@ -23,12 +23,13 @@
 #include <speex/speex_echo.h>
 #include <sched.h>
 
-#include "cli.h"
 #include "conf.h"
 #include "compiler.h"
 #include "die.h"
 #include "alsa.h"
 #include "xmalloc.h"
+
+extern void enter_shell_loop(void);
 
 #define MAX_MSG		1500
 #define SAMPLING_RATE	48000
