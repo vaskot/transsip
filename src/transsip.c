@@ -15,21 +15,31 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <celt/celt.h>
+#include <sys/ptrace.h>
 #include <speex/speex_jitter.h>
 #include <speex/speex_echo.h>
 #include <sched.h>
 
 #include "conf.h"
+#include "curve.h"
 #include "compiler.h"
 #include "die.h"
 #include "alsa.h"
 #include "xmalloc.h"
+#include "xutils.h"
+#include "crypto_verify_32.h"
+#include "crypto_box_curve25519xsalsa20poly1305.h"
+#include "crypto_scalarmult_curve25519.h"
+#include "crypto_auth_hmacsha512256.h"
 
+noinline void *memset(void *__s, int __c, size_t __n);
 extern void enter_shell_loop(void);
+int show_key_export(char *home);
 
 #define MAX_MSG		1500
 #define SAMPLING_RATE	48000
@@ -53,6 +63,224 @@ static CELTEncoder *encoder = NULL;
 static CELTDecoder *decoder = NULL;
 static JitterBuffer *jitter = NULL;
 static SpeexEchoState *echostate = NULL;
+
+static void check_file_or_die(char *home, char *file, int maybeempty)
+{
+	char path[PATH_MAX];
+	struct stat st;
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, file);
+	if (stat(path, &st))
+		panic("No such file %s! Type --keygen to generate initial config!\n",
+		      path);
+	if (!S_ISREG(st.st_mode))
+		panic("%s is not a regular file!\n", path);
+	if ((st.st_mode & ~S_IFREG) != (S_IRUSR | S_IWUSR))
+		panic("You have set too many permissions on %s (%o)!\n",
+		      path, st.st_mode);
+	if (maybeempty == 0 && st.st_size == 0)
+		panic("%s is empty!\n", path);
+}
+
+static void check_config_exists_or_die(char *home)
+{
+	if (!home)
+		panic("No home dir specified!\n");
+	check_file_or_die(home, FILE_CONTACTS, 1);
+	check_file_or_die(home, FILE_SETTINGS, 0);
+	check_file_or_die(home, FILE_PRIVKEY, 0);
+	check_file_or_die(home, FILE_PUBKEY, 0);
+	check_file_or_die(home, FILE_USERNAME, 0);
+}
+
+static char *fetch_home_dir(void)
+{
+	char *home = getenv("HOME");
+	if (!home)
+		panic("No HOME defined!\n");
+	return home;
+}
+
+static void write_username(char *home)
+{
+	int fd, ret;
+	char path[PATH_MAX], *eof;
+	char user[512];
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, FILE_USERNAME);
+	printf("Username: [%s] ", getenv("USER"));
+	fflush(stdout);
+	memset(user, 0, sizeof(user));
+	eof = fgets(user, sizeof(user), stdin);
+	user[sizeof(user) - 1] = 0;
+	user[strlen(user) - 1] = 0; /* omit last \n */
+	if (strlen(user) == 0)
+		strlcpy(user, getenv("USER"), sizeof(user));
+	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	if (fd < 0)
+		panic("Cannot open your username file!\n");
+	ret = write(fd, user, strlen(user));
+	if (ret != strlen(user))
+		panic("Could not write username!\n");
+	close(fd);
+	info("Username written to %s!\n", path);
+}
+
+static void create_transsipdir(char *home)
+{
+	int ret, fd;
+	char path[PATH_MAX];
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, ".transsip/");
+	errno = 0;
+	ret = mkdir(path, S_IRWXU);
+	if (ret < 0 && errno != EEXIST)
+		panic("Cannot create transsip dir!\n");
+	info("transsip directory %s created!\n", path);
+	/* We also create empty files for contacts and settings! */
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, FILE_CONTACTS);
+	fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+	if (fd < 0)
+		panic("Cannot open contacts file!\n");
+	close(fd);
+	info("Empty contacts file written to %s!\n", path);
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, FILE_SETTINGS);
+	fd = open(path, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR);
+	if (fd < 0)
+		panic("Cannot open settings file!\n");
+	close(fd);
+	info("Empty settings file written to %s!\n", path);
+}
+
+static void create_keypair(char *home)
+{
+	int fd;
+	ssize_t ret;
+	unsigned char publickey[crypto_box_curve25519xsalsa20poly1305_PUBLICKEYBYTES] = { 0 };
+	unsigned char secretkey[crypto_box_curve25519xsalsa20poly1305_SECRETKEYBYTES] = { 0 };
+	char path[PATH_MAX];
+	const char * errstr = NULL;
+	int err = 0;
+	info("Reading from %s (this may take a while) ...\n", ENTROPY_SOURCE);
+	fd = open_or_die(ENTROPY_SOURCE, O_RDONLY);
+	ret = read_exact(fd, secretkey, sizeof(secretkey), 0);
+	if (ret != sizeof(secretkey)) {
+		err = EIO;
+		errstr = "Cannot read from "ENTROPY_SOURCE"!\n";
+		goto out;
+	}
+	close(fd);
+	crypto_scalarmult_curve25519_base(publickey, secretkey);
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, FILE_PUBKEY);
+	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	if (fd < 0) {
+		err = EIO;
+		errstr = "Cannot open pubkey file!\n";
+		goto out;
+	}
+	ret = write(fd, publickey, sizeof(publickey));
+	if (ret != sizeof(publickey)) {
+		err = EIO;
+		errstr = "Cannot write public key!\n";
+		goto out;
+	}
+	close(fd);
+	info("Public key written to %s!\n", path);
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, FILE_PRIVKEY);
+	fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	if (fd < 0) {
+		err = EIO;
+		errstr = "Cannot open privkey file!\n";
+		goto out;
+	}
+	ret = write(fd, secretkey, sizeof(secretkey));
+	if (ret != sizeof(secretkey)) {
+		err = EIO;
+		errstr = "Cannot write private key!\n";
+		goto out;
+	}
+out:
+	close(fd);
+	memset(publickey, 0, sizeof(publickey));
+	memset(secretkey, 0, sizeof(secretkey));
+	if (err)
+		panic("%s: %s", errstr, strerror(errno));
+	else
+		info("Private key written to %s!\n", path);
+}
+
+static void check_config_keypair_or_die(char *home)
+{
+	int fd;
+	ssize_t ret;
+	int err;
+	const char * errstr = NULL;
+	unsigned char publickey[crypto_box_curve25519xsalsa20poly1305_PUBLICKEYBYTES];
+	unsigned char publicres[crypto_box_curve25519xsalsa20poly1305_PUBLICKEYBYTES];
+	unsigned char secretkey[crypto_box_curve25519xsalsa20poly1305_SECRETKEYBYTES];
+	char path[PATH_MAX];
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, FILE_PRIVKEY);
+	fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		err = EIO;
+		errstr = "Cannot open privkey file!\n";
+		goto out;
+	}
+	ret = read(fd, secretkey, sizeof(secretkey));
+	if (ret != sizeof(secretkey)) {
+		err = EIO;
+		errstr = "Cannot read private key!\n";
+		goto out;
+	}
+	close(fd);
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, FILE_PUBKEY);
+	fd = open(path, O_RDONLY);
+	if (fd < 0) {
+		err = EIO;
+		errstr = "Cannot open pubkey file!\n";
+		goto out;
+	}
+	ret = read(fd, publickey, sizeof(publickey));
+	if (ret != sizeof(publickey)) {
+		err = EIO;
+		errstr = "Cannot read public key!\n";
+		goto out;
+	}
+	crypto_scalarmult_curve25519_base(publicres, secretkey);
+	err = crypto_verify_32(publicres, publickey);
+	if (err) {
+		err = EINVAL;
+		errstr = "WARNING: your keypair is corrupted!!! You need to "
+			 "generate new keys!!!\n";
+		goto out;
+	}
+out:
+	close(fd);
+	memset(publickey, 0, sizeof(publickey));
+	memset(publicres, 0, sizeof(publicres));
+	memset(secretkey, 0, sizeof(secretkey));
+	if (err)
+		panic("%s: %s\n", errstr, strerror(errno));
+}
+
+static int keygen(char *home)
+{
+	create_transsipdir(home);
+	write_username(home);
+	create_keypair(home);
+	check_config_keypair_or_die(home);
+	printf("\nNow edit your .transsip/settings file before starting i.e.:\n");
+	printf(" port <your-transsip-port>\n");
+	printf(" stun stunserver.org\n");
+	printf(" alsa plughw:0,0\n");
+	return 0;
+}
 
 static void do_call_duplex(void)
 {
@@ -272,6 +500,21 @@ static void stop_server(void)
 
 int main(int argc, char **argv)
 {
+	char *home = fetch_home_dir();
+	if (getuid() != geteuid())
+		seteuid(getuid());
+	if (getenv("LD_PRELOAD"))
+		panic("transsip cannot be preloaded!\n");
+	if (ptrace(PTRACE_TRACEME, 0, 1, 0) < 0)
+		panic("transsip cannot be ptraced!\n");
+	curve25519_selftest();
+	if (argc == 2 && !strncmp("--keygen", argv[1], strlen("--keygen"))) {
+		keygen(home);
+		show_key_export(home);
+		return 0;
+	}
+	check_config_exists_or_die(home);
+	check_config_keypair_or_die(home);
 	start_server();
 	enter_shell_loop();
 	stop_server();
@@ -286,5 +529,38 @@ int get_port(void)
 char *get_stun_server(void)
 {
 	return stun_server;
+}
+
+int show_key_export(char *home)
+{
+	int fd, i;
+	ssize_t ret;
+	char path[PATH_MAX], tmp[64];
+	check_config_exists_or_die(home);
+	check_config_keypair_or_die(home);
+	printf("Your public information:\n ");
+	fflush(stdout);
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, FILE_USERNAME);
+	fd = open_or_die(path, O_RDONLY);
+	while ((ret = read(fd, tmp, sizeof(tmp))) > 0) {
+		ret = write(STDOUT_FILENO, tmp, ret);
+	}
+	close(fd);
+	printf(" ");
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", home, FILE_PUBKEY);
+	fd = open_or_die(path, O_RDONLY);
+	ret = read(fd, tmp, sizeof(tmp));
+	if (ret != crypto_box_curve25519xsalsa20poly1305_PUBLICKEYBYTES)
+		panic("Cannot read public key!\n");
+	for (i = 0; i < ret; ++i)
+		if (i == ret - 1)
+			printf("%02x\n\n", (unsigned char) tmp[i]);
+		else
+			printf("%02x:", (unsigned char) tmp[i]);
+	close(fd);
+	fflush(stdout);
+	return 0;
 }
 
