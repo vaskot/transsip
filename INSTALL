@@ -17,6 +17,9 @@ On Debian simply type:
 If the compiler somehow complains about not finding libspeexdsp1, try:
 # ln -s /usr/lib/libspeexdsp.so.1 /usr/lib/libspeexdsp.so
 
+For keeping your clock synced, do:
+# apt-get install ntp
+
 Furthermore, note that a network connection speed not less than 128 kbps
 (equals DSL 1000 in some countries) in both directions is needed in order
 to place calls.
