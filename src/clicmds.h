@@ -6,8 +6,8 @@
  * Subject to the GPL, version 2.
  */
 
-#ifndef CLI_CMDS_H
-#define CLI_CMDS_H
+#ifndef CLICMDS_H
+#define CLICMDS_H
 
 #include <readline/readline.h>
 
@@ -57,5 +57,5 @@ static struct shell_cmd cmd_tree[] = {
 	{ NULL, NULL, NULL, NULL, },
 };
 
-#endif /* CLI_CMDS_H */
+#endif /* CLICMDS_H */
 

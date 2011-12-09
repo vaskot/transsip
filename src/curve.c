@@ -20,8 +20,8 @@
 
 #include "compiler.h"
 #include "xmalloc.h"
+#include "xutils.h"
 #include "curve.h"
-#include "strlcpy.h"
 #include "die.h"
 #include "mtrand.h"
 #include "conf.h"

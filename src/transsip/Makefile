@@ -10,13 +10,13 @@ LIBS        = ./nacl/libnacl.a -lspeexdsp -lasound -lcelt0 -lm -lreadline -lpthr
 
 core-objs   = transsip.o
 lib-objs    = xmalloc.o		\
+	      xutils.o		\
 	      stun.o		\
 	      alsa.o		\
 	      cli.o		\
 	      curve.o		\
-	      mtrand.o		\
-	      write_or_die.o	\
-	      strlcpy.o
+	      mtrand.o
+
 #     dht.o		\
 
 target      = transsip

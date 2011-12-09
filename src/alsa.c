@@ -40,7 +40,7 @@
 #include "die.h"
 #include "alsa.h"
 #include "xmalloc.h"
-#include "strlcpy.h"
+#include "xutils.h"
 
 #define PERIODS	3
 

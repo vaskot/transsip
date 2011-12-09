@@ -3,8 +3,10 @@
  * By Daniel Borkmann <daniel@transsip.org>
  * Copyright 2011 Daniel Borkmann.
  * Subject to the GPL, version 2.
+ * strlcpy: Copyright (C) 1991, 1992  Linus Torvalds, GPL, version 2
  */
 
+#define _BSD_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,17 +14,16 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/socket.h>
-#include <linux/if.h>
-#include <linux/if_tun.h>
 
-#include "write_or_die.h"
+#include "xutils.h"
+#include "xmalloc.h"
 #include "die.h"
-#include "strlcpy.h"
 
 extern sig_atomic_t quit;
 
@@ -46,32 +47,6 @@ int open_or_die_m(const char *file, int flags, mode_t mode)
 	if (ret < 0)
 		puke_and_die(EXIT_FAILURE, "Open error");
 	return ret;
-}
-
-int tun_open_or_die(char *name)
-{
-	int fd, ret;
-	struct ifreq ifr;
-
-	fd = open("/dev/net/tun", O_RDWR);
-	if (fd < 0)
-		panic("Cannot open /dev/net/tun!\n");
-
-	memset(&ifr, 0, sizeof(ifr));
-	ifr.ifr_flags = IFF_TUN | IFF_NO_PI;
-
-	if (name)
-		strlcpy(ifr.ifr_name, name, IFNAMSIZ);
-
-	ret = ioctl(fd, TUNSETIFF, &ifr);
-	if (ret < 0)
-		panic("ioctl screwed up!\n");
-
-	ret = fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
-	if (ret < 0)
-		panic("fctnl screwed up!\n");
-
-	return fd;
 }
 
 ssize_t read_or_die(int fd, void *buf, size_t len)
@@ -173,3 +148,61 @@ ssize_t write_or_whine(int fd, const void *buf, size_t len,
 
 	return ret;
 }
+
+size_t strlcpy(char *dest, const char *src, size_t size)
+{
+	size_t ret = strlen(src);
+	if (size) {
+		size_t len = (ret >= size) ? size - 1 : ret;
+		memcpy(dest, src, len);
+		dest[len] = '\0';
+	}
+	return ret;
+}
+
+int slprintf(char *dst, size_t size, const char *fmt, ...)
+{
+	int ret;
+	va_list ap;
+	va_start(ap, fmt);
+	ret = vsnprintf(dst, size, fmt, ap);
+	dst[size - 1] = '\0';
+	va_end(ap);
+	return ret;
+}
+
+char **strntoargv(char *str, size_t len, int *argc)
+{
+	int done = 0;
+	char **argv = NULL;
+	if (argc == NULL)
+		panic("argc is null!\n");
+	*argc = 0;
+	if (len <= 1) /* '\0' */
+		goto out;
+	while (!done) {
+		while (len > 0 && *str == ' ') {
+			len--;
+			str++;
+		}
+		if (len > 0 && *str != '\0') {
+			(*argc)++;
+			argv = xrealloc(argv, 1, sizeof(char *) * (*argc));
+			argv[(*argc) - 1] = str;
+			while (len > 0 && *str != ' ') {
+				len--;
+				str++;
+			}
+			if (len > 0 && *str == ' ') {
+				len--;
+				*str = '\0';
+				str++;
+			}
+		} else {
+			done = 1;
+		}
+	}
+out:
+	return argv;
+}
+
