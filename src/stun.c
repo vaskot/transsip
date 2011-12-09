@@ -21,8 +21,8 @@
 
 #include "die.h"
 #include "xmalloc.h"
+#include "xutils.h"
 #include "stun.h"
-#include "timespec.h"
 
 /* Discovery type result */
 #define RESULT_NONE                   0
