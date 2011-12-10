@@ -55,10 +55,13 @@ clean:
 
 install:
 	@install -D $(target) $(DESTDIR)/$(BINDIR)/$(target)
+	@install -d $(DESTDIR)/$(ETCDIR)/$(target)/
+	@install -D ../sounds/*.wav $(DESTDIR)/$(ETCDIR)/$(target)/
 	@install -D $(target).8.gz $(DESTDIR)/usr/share/man/man8/$(target).8.gz
 
 uninstall:
 	@rm $(DESTDIR)/$(BINDIR)/$(target) || true
+	@rm -rf $(DESTDIR)/$(ETCDIR)/$(target)/
 	@rm $(DESTDIR)/usr/share/man/man8/$(target).8.gz || true
 
 help:
