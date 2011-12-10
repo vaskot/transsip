@@ -75,6 +75,7 @@ sig_atomic_t did_stun = 0;
 static sig_atomic_t incoming_call = 0;
 
 static struct pollfd *pfds = NULL;
+static int nfds = 0;
 static struct alsa_dev *dev = NULL;
 static CELTEncoder *encoder = NULL;
 static CELTDecoder *decoder = NULL;
@@ -301,6 +302,34 @@ static int keygen(char *home)
 	return 0;
 }
 
+static void play_ring(void)
+{
+	int fd;
+	char path[PATH_MAX];
+	short pcm[FRAME_SIZE * CHANNELS];
+	memset(path, 0, sizeof(path));
+	slprintf(path, sizeof(path), "%s/%s", FILE_ETCDIR, FILE_RING);
+	fd = open(path, O_RDONLY);
+	if (fd < 0)
+		panic("Cannot open ring file!\n");
+	memset(pcm, 0, sizeof(pcm));
+	alsa_start(dev);
+	while (read(fd, pcm, sizeof(pcm)) > 0) {
+		alsa_write(dev, pcm, FRAME_SIZE);
+		alsa_read(dev, pcm, FRAME_SIZE);
+		memset(pcm, 0, sizeof(pcm));
+	}
+	close(fd);
+}
+
+static void play_busy(void)
+{
+}
+
+static void play_dial(void)
+{
+}
+
 static void do_call_duplex(void)
 {
 #if 0
@@ -395,6 +424,7 @@ void call_out(char *host, char *port)
 	/* transfer data */
 
 	printf("Trying to call %s:%s ...\n", host, port);
+	play_ring();
 	do_call_duplex();
 }
 
@@ -416,7 +446,7 @@ void call_in(int take)
 
 static void *thread(void *null)
 {
-	int sock = -1, ret, mtu, nfds, tmp;
+	int sock = -1, ret, mtu, tmp;
 	struct addrinfo hints, *ahead, *ai;
 	CELTMode *mode;
 

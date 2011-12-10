@@ -15,7 +15,10 @@
 #define FILE_PRIVKEY    ".transsip/priv.key"
 #define FILE_PUBKEY     ".transsip/pub.key"
 #define FILE_USERNAME   ".transsip/username"
-#define FILE_ETCDIR	"/etc/transsip/"
+#define FILE_ETCDIR	"/etc/transsip"
+#define FILE_BUSY	"busytone.raw"
+#define FILE_RING	"ring.raw"
+#define FILE_DIAL	"dialtone.raw"
 #define ENTROPY_SOURCE  "/dev/random"
 #define MAX_MSG         1500
 #define SAMPLING_RATE   48000
