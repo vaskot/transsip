@@ -20,7 +20,6 @@
 #include "compiler.h"
 #include "xmalloc.h"
 #include "xutils.h"
-#include "die.h"
 
 __hidden void *xmalloc(size_t size)
 {

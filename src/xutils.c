@@ -23,21 +23,20 @@
 
 #include "xutils.h"
 #include "xmalloc.h"
-#include "die.h"
 
 extern sig_atomic_t quit;
 
 void fsync_or_die(int fd, const char *msg)
 {
 	if (fsync(fd) < 0)
-		puke_and_die(EXIT_FAILURE, "%s: fsync error", msg);
+		panic("%s: fsync error\n", msg);
 }
 
 int open_or_die(const char *file, int flags)
 {
 	int ret = open(file, flags);
 	if (ret < 0)
-		puke_and_die(EXIT_FAILURE, "Open error");
+		panic("Open error!!\n");
 	return ret;
 }
 
@@ -45,7 +44,7 @@ int open_or_die_m(const char *file, int flags, mode_t mode)
 {
 	int ret = open(file, flags, mode);
 	if (ret < 0)
-		puke_and_die(EXIT_FAILURE, "Open error");
+		panic("Open error!!\n");
 	return ret;
 }
 
@@ -55,7 +54,7 @@ ssize_t read_or_die(int fd, void *buf, size_t len)
 	if (ret < 0) {
 		if (errno == EPIPE)
 			exit(EXIT_SUCCESS);
-		puke_and_die(EXIT_FAILURE, "Read error");
+		panic("Read error!!\n");
 	}
 
 	return ret;
@@ -117,7 +116,7 @@ ssize_t write_or_die(int fd, const void *buf, size_t len)
 	if (ret < 0) {
 		if (errno == EPIPE)
 			exit(EXIT_SUCCESS);
-		puke_and_die(EXIT_FAILURE, "Write error");
+		panic("Write error!!\n");
 	}
 
 	return ret;

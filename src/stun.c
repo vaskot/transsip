@@ -19,7 +19,6 @@
 #include <arpa/inet.h>
 #include <sys/select.h>
 
-#include "die.h"
 #include "xmalloc.h"
 #include "xutils.h"
 #include "stun.h"

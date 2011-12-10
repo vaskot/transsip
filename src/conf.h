@@ -16,10 +16,13 @@
 #define FILE_PUBKEY     ".transsip/pub.key"
 #define FILE_USERNAME   ".transsip/username"
 #define ENTROPY_SOURCE  "/dev/random"
+#define MAX_MSG         1500
+#define SAMPLING_RATE   48000
+#define FRAME_SIZE      256
+#define PACKETSIZE      43
+#define CHANNELS        1
 
 extern int get_port(void);
 extern char *get_stun_server(void);
-
-#define TUNBUFF_SIZ	(3 * getpagesize())
 
 #endif /* CONF_H */

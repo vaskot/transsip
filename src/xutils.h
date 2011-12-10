@@ -16,6 +16,10 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <stdarg.h>
+#include <stdlib.h>
+
+#include "compiler.h"
 
 extern void fsync_or_die(int fd, const char *msg);
 extern int open_or_die(const char *file, int flags);
@@ -181,12 +185,56 @@ static inline int set_timeout(struct timeval *timeval, unsigned int msec)
 	return 0;
 }
 
-/* x86 ticks */
-static inline unsigned long long getticks(void)
+static inline void die(void)
 {
-	unsigned int __a,__d;
-	__asm__ __volatile__("rdtsc" : "=a" (__a), "=d" (__d));
-	return ((long long)__a) | (((long long)__d)<<32);
+	exit(EXIT_FAILURE);
+}
+
+static inline void panic(char *msg, ...)
+{
+	va_list vl;
+	va_start(vl, msg);
+	vfprintf(stderr, msg, vl);
+	va_end(vl);
+	die();
+}
+
+static inline void whine(char *msg, ...)
+{
+	va_list vl;
+	va_start(vl, msg);
+	vfprintf(stderr, msg, vl);
+	va_end(vl);
+}
+
+static inline void info(char *msg, ...)
+{
+	va_list vl;
+	va_start(vl, msg);
+	vfprintf(stdout, msg, vl);
+	va_end(vl);
+}
+
+static inline void BUG(char *msg, ...)
+{
+	va_list vl;
+	whine("BUG: ");
+	va_start(vl, msg);
+	vfprintf(stderr, msg, vl);
+	va_end(vl);
+	die();
+}
+
+static inline void BUG_ON(int cond, char *msg, ...)
+{
+	va_list vl;
+	if (unlikely(cond)) {
+		whine("BUG: ");
+		va_start(vl, msg);
+		vfprintf(stderr, msg, vl);
+		va_end(vl);
+		die();
+	}
 }
 
 #endif /* XUTILS_H */

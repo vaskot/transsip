@@ -9,12 +9,9 @@
 #ifndef ALSA_H
 #define ALSA_H
 
-#include <stdlib.h>
 #include <sys/poll.h>
-#include <alsa/asoundlib.h>
 
 struct alsa_dev;
-
 extern struct alsa_dev *alsa_open(char *devname, unsigned int rate,
 				  int channels, int period);
 extern void alsa_close(struct alsa_dev *dev);
