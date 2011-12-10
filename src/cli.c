@@ -21,7 +21,6 @@
 #include "version.h"
 #include "xmalloc.h"
 #include "xutils.h"
-#include "signals.h"
 #include "compiler.h"
 #include "stun.h"
 
