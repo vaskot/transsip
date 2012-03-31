@@ -272,6 +272,10 @@ void alsa_start(struct alsa_dev *dev)
 	snd_pcm_start(dev->playback_handle);
 }
 
+void alsa_stop(struct alsa_dev *dev)
+{
+}
+
 inline unsigned int alsa_nfds(struct alsa_dev *dev)
 {
 	return dev->read_fds + dev->write_fds;

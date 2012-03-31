@@ -14,6 +14,7 @@ extern int alsa_cap_ready(struct alsa_dev *dev, struct pollfd *pfds,
 extern int alsa_play_ready(struct alsa_dev *dev, struct pollfd *pfds,
 			   unsigned int nfds);
 extern void alsa_start(struct alsa_dev *dev);
+extern void alsa_stop(struct alsa_dev *dev);
 extern unsigned int alsa_nfds(struct alsa_dev *dev);
 extern void alsa_getfds(struct alsa_dev *dev, struct pollfd *pfds,
 			unsigned int nfds);

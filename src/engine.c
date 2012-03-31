@@ -107,6 +107,8 @@ static void engine_play_file(struct alsa_dev *dev, enum engine_sound_type type)
 		memset(pcm, 0, sizeof(pcm));
 	}
 
+	alsa_stop(dev);
+
 	close(fd);
 }
 
@@ -413,6 +415,7 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	struct sockaddr raddr;
 	struct transsip_hdr *thdr;
 	socklen_t raddrlen;
+	struct cli_pkt cpkt;
 
 	assert(ecurr.active == 1);
 
@@ -429,17 +432,29 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	speex_echo_ctl(echostate, SPEEX_ECHO_SET_SAMPLING_RATE, &tmp);
 
 	nfds = alsa_nfds(dev);
-	pfds = xmalloc(sizeof(*pfds) * (nfds + 1));
+	pfds = xmalloc(sizeof(*pfds) * (nfds + 2));
 
 	alsa_getfds(dev, pfds, nfds);
 
 	pfds[nfds].fd = ecurr.sock;
 	pfds[nfds].events = POLLIN;
+	pfds[nfds + 1].fd = usocki;
+	pfds[nfds + 1].events = POLLIN;
 
 	alsa_start(dev);
 
 	while (likely(!quit)) {
-		poll(pfds, nfds + 1, -1);
+		poll(pfds, nfds + 2, -1);
+
+		if (pfds[nfds + 1].revents & POLLIN) {
+			ret = read(usocki, &cpkt, sizeof(cpkt));
+			if (ret <= 0)
+				continue;
+			if (cpkt.fin) {
+				whine("You aborted call!\n");
+				goto out_err;
+			}
+		}
 
 		if (pfds[nfds].revents & POLLIN) {
 			JitterBufferPacket packet;
@@ -536,6 +551,8 @@ out_alsa:
 	}
 
 out_err:
+	alsa_stop(dev);
+
 	if (ecurr.sock == *csock) {
 		close(*csock);
 		*csock = 0;
