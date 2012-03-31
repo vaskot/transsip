@@ -306,12 +306,16 @@ static enum engine_state_num engine_do_callin(int ssock, int *csock, int usocki,
 
 	memset(&msg, 0, sizeof(msg));
 	ret = recvfrom(ssock, msg, sizeof(msg), 0, &raddr, &raddrlen);
-	if (ret <= 0)
+	if (ret <= 0) {
+		whine("error 1\n");
 		return ENGINE_STATE_IDLE;
+	}
 
 	thdr = (struct transsip_hdr *) msg;
-	if (thdr->est != 1)
+	if (thdr->est != 1) {
+		whine("error 2\n");
 		return ENGINE_STATE_IDLE;
+	}
 
 	memcpy(&ecurr.addr, &raddr, raddrlen);
 	ecurr.addrlen = raddrlen;
@@ -521,9 +525,8 @@ out_alsa:
 			}
 
 			alsa_write(dev, pcm, FRAME_SIZE);
-//				speex_echo_state_reset(echostate);
-
-//			speex_echo_playback(echostate, pcm);
+				speex_echo_state_reset(echostate);
+			speex_echo_playback(echostate, pcm);
 		}
 
 		if (alsa_cap_ready(dev, pfds, nfds)) {
@@ -532,9 +535,9 @@ out_alsa:
 
 			alsa_read(dev, pcm, FRAME_SIZE);
 
-			//speex_echo_capture(echostate, pcm, pcm2);
-			//for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
-			//	pcm[i] = pcm2[i];
+			speex_echo_capture(echostate, pcm, pcm2);
+			for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
+				pcm[i] = pcm2[i];
 
 			memset(msg, 0, sizeof(msg));
 			thdr = (struct transsip_hdr *) msg;
@@ -543,6 +546,7 @@ out_alsa:
 				    (msg + sizeof(*thdr)), PACKETSIZE);
 
 			thdr->psh = 1;
+			thdr->est = 1;
 			thdr->seq = htonl(send_seq);
 			send_seq += FRAME_SIZE;
 
@@ -558,6 +562,13 @@ out_alsa:
 
 out_err:
 	alsa_stop(dev);
+
+	memset(msg, 0, sizeof(msg));
+	thdr = (struct transsip_hdr *) msg;
+	thdr->fin = 1;
+
+	sendto(ecurr.sock, msg, sizeof(*thdr), 0, &ecurr.addr,
+	       ecurr.addrlen);
 
 	if (ecurr.sock == *csock) {
 		close(*csock);
