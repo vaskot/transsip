@@ -142,6 +142,8 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 
 	assert(ecurr.active == 0);
 
+	whine("In Callout!\n");
+
 	memset(&cpkt, 0, sizeof(cpkt));
 	ret = read(usocki, &cpkt, sizeof(cpkt));
 	if (ret != sizeof(cpkt)) {
@@ -300,6 +302,8 @@ static enum engine_state_num engine_do_callin(int ssock, int *csock, int usocki,
 
 	assert(ecurr.active == 0);
 
+	whine("In Callin!\n");
+
 	memset(&msg, 0, sizeof(msg));
 	ret = recvfrom(ssock, msg, sizeof(msg), 0, &raddr, &raddrlen);
 	if (ret <= 0)
@@ -419,6 +423,8 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 
 	assert(ecurr.active == 1);
 
+	whine("In Speaking!\n");
+
 	mode = celt_mode_create(SAMPLING_RATE, FRAME_SIZE, NULL);
 	encoder = celt_encoder_create(mode, CHANNELS, NULL);
 	decoder = celt_decoder_create(mode, CHANNELS, NULL);
@@ -514,10 +520,10 @@ out_alsa:
 					pcm[i] = 0;
 			}
 
-			if (alsa_write(dev, pcm, FRAME_SIZE)) 
-				speex_echo_state_reset(echostate);
+			alsa_write(dev, pcm, FRAME_SIZE);
+//				speex_echo_state_reset(echostate);
 
-			speex_echo_playback(echostate, pcm);
+//			speex_echo_playback(echostate, pcm);
 		}
 
 		if (alsa_cap_ready(dev, pfds, nfds)) {
@@ -526,9 +532,9 @@ out_alsa:
 
 			alsa_read(dev, pcm, FRAME_SIZE);
 
-			speex_echo_capture(echostate, pcm, pcm2);
-			for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
-				pcm[i] = pcm2[i];
+			//speex_echo_capture(echostate, pcm, pcm2);
+			//for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
+			//	pcm[i] = pcm2[i];
 
 			memset(msg, 0, sizeof(msg));
 			thdr = (struct transsip_hdr *) msg;
@@ -582,6 +588,8 @@ static enum engine_state_num engine_do_idle(int ssock, int *csock, int usocki,
 	struct cli_pkt cpkt;
 
 	assert(ecurr.active == 0);
+
+	whine("In Idle!\n");
 
 	fds[0].fd = ssock;
 	fds[0].events = POLLIN;
