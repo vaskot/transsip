@@ -1,50 +1,22 @@
 /*
  * transsip - the telephony network
  * By Daniel Borkmann <daniel@transsip.org>
- * Copyright 2011 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
+ * Copyright 2011-2012 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
  * Swiss federal institute of technology (ETH Zurich)
+ * Copyright 2004-2006 Jean-Marc Valin
+ * Copyright 2006 Commonwealth Scientific and Industrial Research
+ *                Organisation (CSIRO) Australia (2-clause BSD)
  * Subject to the GPL, version 2.
- */
-
-/*
- * Copyright (C) 2011 Daniel Borkmann (major cleanups, improvements, fixed bugs)
- * Copyright (C) 2004-2006 Jean-Marc Valin
- * Copyright (C) 2006 Commonwealth Scientific and Industrial Research
- *                    Organisation (CSIRO) Australia
- *  
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the following disclaimer.
- *
- * 2. Redistributions in binary form must reproduce the above copyright
- * notice, this list of conditions and the following disclaimer in the
- * documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
- * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- * POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <stdlib.h>
 #include <sys/poll.h>
 #include <alsa/asoundlib.h>
 
-#include "compiler.h"
-#include "xutils.h"
+#include "built-in.h"
+#include "die.h"
 #include "alsa.h"
 #include "xmalloc.h"
-#include "xutils.h"
 
 #define PERIODS	3
 
@@ -218,20 +190,20 @@ ssize_t alsa_read(struct alsa_dev *dev, short *pcm, size_t len)
 	if (unlikely(ret != len)) {
 		if (ret < 0) {
 			if (ret == -EPIPE) {
-				info("An overrun has occured, "
-				     "reseting capture!\n");
+				//printf("An overrun has occured, "
+				//       "reseting capture!\n");
 			} else {
-				info("Read from audio interface "
-				     "failed: %s\n", snd_strerror(ret));
+				printf("Read from audio interface "
+				       "failed: %s\n", snd_strerror(ret));
 			}
 			ret = snd_pcm_prepare(dev->capture_handle);
 			if (unlikely(ret < 0))
-				info("Error preparing interface: %s\n",
-				     snd_strerror(ret));
+				printf("Error preparing interface: %s\n",
+				       snd_strerror(ret));
 			ret = snd_pcm_start(dev->capture_handle);
 			if (unlikely(ret < 0))
-				info("Error preparing interface: %s\n",
-				     snd_strerror(ret));
+				printf("Error preparing interface: %s\n",
+				       snd_strerror(ret));
 		}
 	}
 	return ret;
@@ -244,16 +216,16 @@ ssize_t alsa_write(struct alsa_dev *dev, const short *pcm, size_t len)
 	if (unlikely(ret != len)) {
 		if (ret < 0) {
 			if (ret == -EPIPE) {
-				info("An underrun has occured, "
-				     "reseting playback!\n");
+				//printf("An underrun has occured, "
+				//       "reseting playback!\n");
 			} else {
-				info("Write to audio interface "
-				     "failed: %s\n", snd_strerror(ret));
+				printf("Write to audio interface "
+				       "failed: %s\n", snd_strerror(ret));
 			}
 			ret = snd_pcm_prepare(dev->playback_handle);
 			if (unlikely(ret < 0))
-				info("Error preparing interface: %s\n",
-				     snd_strerror(ret));
+				printf("Error preparing interface: %s\n",
+				       snd_strerror(ret));
 		}
 	}
 	return ret;
@@ -309,7 +281,6 @@ void alsa_getfds(struct alsa_dev *dev, struct pollfd *pfds,
 		 unsigned int nfds)
 {
 	int i;
-	BUG_ON(nfds < alsa_nfds(dev), "%s\n", __func__);
 	for (i = 0; i < dev->read_fds; ++i)
 		pfds[i] = dev->read_fd[i];
 	for (i = 0; i < dev->write_fds; ++i)

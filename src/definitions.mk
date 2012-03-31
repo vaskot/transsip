@@ -35,7 +35,7 @@ ifneq ($(or $(call eq,$(MAKECMDGOALS),"all"), $(call eq,$(MAKECMDGOALS),"")),)
 	CFLAGS  = -O2 -fomit-frame-pointer -fno-strict-aliasing -fno-common  \
 		  -fno-delete-null-pointer-checks -std=gnu99                 \
 		  -fstack-protector -D_FORTIFY_SOURCE=2 -fPIE                \
-		  -fno-strict-overflow -D_REENTRANT -pedantic
+		  -fno-strict-overflow -D_REENTRANT
 	CFLAGS += -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs   \
 		  -Werror-implicit-function-declaration -Wno-format-security \
 		  -Wcomments -Wendif-labels -Wno-long-long -Wuninitialized   \

@@ -1,11 +1,3 @@
-/*
- * transsip - the telephony network
- * By Daniel Borkmann <daniel@transsip.org>
- * Copyright 2011 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
- * Swiss federal institute of technology (ETH Zurich)
- * Subject to the GPL, version 2.
- */
-
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>
@@ -15,21 +7,20 @@
 #include <readline/history.h>
 #include <ctype.h>
 
-#include "tty.h"
-#include "conf.h"
 #include "clicmds.h"
-#include "version.h"
 #include "xmalloc.h"
 #include "xutils.h"
-#include "compiler.h"
-#include "stun.h"
+#include "built-in.h"
+#include "die.h"
 
 #define FETCH_LIST  0
 #define FETCH_ELEM  1
 
 static int exit_val = 0;
+
 sig_atomic_t quit = 0;
-extern sig_atomic_t did_stun;
+
+//extern sig_atomic_t did_stun;
 
 static void fetch_user(char *user, size_t len)
 {
@@ -55,7 +46,7 @@ static void setup_prompt(char *prompt, size_t len)
 	fetch_host(host, sizeof(host));
 
 	memset(prompt, 0, len);
-	slprintf(prompt, len, "transsip://%s@%s> ", user, host);
+	slprintf(prompt, len, "%s@%s> ", user, host);
 }
 
 static void find_list(struct shell_cmd **list, const char *token)
@@ -251,11 +242,16 @@ static char *strip_white(char *line)
 	return l;
 }
 
-void enter_shell_loop(void)
+static int tsocki, tsocko;
+
+void enter_shell_loop(int __tsocki, int __tsocko)
 {
 	char *prompt;
 	char *line, *cmd;
 	size_t prompt_len = 256;
+
+	tsocki = __tsocki;
+	tsocko = __tsocko;
 
 	prompt = xzmalloc(prompt_len);
 	setup_prompt(prompt, prompt_len);
@@ -263,9 +259,8 @@ void enter_shell_loop(void)
 
 	printf("\n%s%s%s shell\n\n", colorize_start(bold),
 	       PROGNAME_STRING " " VERSION_STRING, colorize_end());
-	print_stun_probe(get_stun_server(), 3478, get_port());
-	did_stun = 1;
-	barrier();
+	//print_stun_probe(get_stun_server(), 3478, get_port());
+	//did_stun = 1;
 	fflush(stdout);
 
 	while (!quit) {
@@ -319,22 +314,60 @@ int cmd_stat(char *args)
 	return 0;
 }
 
-int cmd_call_ip(char *arg)
+int cmd_call(char *arg)
 {
-	int argc, i;
+	int argc;
+	ssize_t ret;
 	char **argv = strntoargv(arg, strlen(arg), &argc);
+	struct cli_pkt cpkt;
+
 	if (argc != 2) {
-		printf("Missing arguments: call ip <ipv4/ipv6/host> <port>\n");
+		whine("Missing arguments: call <ipv4/ipv6/host> <port>\n");
+		xfree(argv);
 		return -EINVAL;
 	}
-	call_out(argv[0], argv[1]);
+	if (strlen(argv[0]) > ADDRSIZ || strlen(argv[1]) > PORTSIZ) {
+		whine("Arguments too long!\n");
+		xfree(argv);
+		return -EINVAL;
+	}
+
+	memset(&cpkt, 0, sizeof(cpkt));
+	cpkt.ring = 1;
+	strlcpy(cpkt.address, argv[0], sizeof(cpkt.address));
+	strlcpy(cpkt.port, argv[1], sizeof(cpkt.port));
+
+	ret = write(tsocko, &cpkt, sizeof(cpkt));
+	ret = write(tsocko, &cpkt, sizeof(cpkt)); //XXX
+	if (ret != sizeof(cpkt)) {
+		whine("Error notifying thread!\n");
+		return -EIO;
+	}
+
+	printf("Calling ... hang up the line with: hangup\n");
+
 	xfree(argv);
+	return 0;
+}
+
+int cmd_hangup(char *arg)
+{
+	ssize_t ret;
+	struct cli_pkt cpkt;
+
+	memset(&cpkt, 0, sizeof(cpkt));
+	cpkt.fin = 1;
+
+	ret = write(tsocko, &cpkt, sizeof(cpkt));
+	if (ret != sizeof(cpkt)) {
+		whine("Error notifying thread!\n");
+		return -EIO;
+	}
+
 	return 0;
 }
 
 int cmd_take(char *arg)
 {
-	call_in(1);
 	return 0;
 }
-
