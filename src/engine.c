@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <assert.h>
 
 #include "built-in.h"
 #include "alsa.h"
@@ -137,7 +138,7 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 	socklen_t raddrlen;
 	struct transsip_hdr *thdr;
 
-	printf("In call out!\n");
+	assert(ecurr.active == 0);
 
 	memset(&cpkt, 0, sizeof(cpkt));
 	ret = read(usocki, &cpkt, sizeof(cpkt));
@@ -266,6 +267,8 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 				}
 				if (thdr->bsy == 1) {
 					whine("Remote end busy!\n");
+					engine_play_busy(dev);
+					engine_play_busy(dev);
 					goto out_err;
 				}
 			}
@@ -283,9 +286,113 @@ out_err:
 static enum engine_state_num engine_do_callin(int ssock, int *csock, int usocki,
 					      int usocko, struct alsa_dev *dev)
 {
-	printf("In call in!\n");
+	int i;
+	ssize_t ret;
+	char msg[MAX_MSG];
+	struct sockaddr raddr;
+	socklen_t raddrlen;
+	struct transsip_hdr *thdr;
+	char hbuff[256], sbuff[256];
+	struct pollfd fds[2];
+	struct cli_pkt cpkt;
 
+	assert(ecurr.active == 0);
 
+	memset(&msg, 0, sizeof(msg));
+	ret = recvfrom(ssock, msg, sizeof(msg), 0, &raddr, &raddrlen);
+	if (ret <= 0)
+		return ENGINE_STATE_IDLE;
+
+	thdr = (struct transsip_hdr *) msg;
+	if (thdr->est != 1)
+		return ENGINE_STATE_IDLE;
+
+	memcpy(&ecurr.addr, &raddr, raddrlen);
+	ecurr.addrlen = raddrlen;
+	ecurr.sock = ssock;
+	ecurr.active = 0;
+
+	memset(hbuff, 0, sizeof(hbuff));
+	memset(sbuff, 0, sizeof(sbuff));
+	getnameinfo((struct sockaddr *) &raddr, raddrlen, hbuff, sizeof(hbuff),
+		    sbuff, sizeof(sbuff), NI_NUMERICHOST | NI_NUMERICSERV);
+
+	printf("New incoming connection from %s:%s!\n", hbuff, sbuff);
+	printf("Answer it with: take\n");
+	printf("Reject it with: hangup\n");
+	fflush(stdout);
+
+	fds[0].fd = ssock;
+	fds[0].events = POLLIN;
+	fds[1].fd = usocki;
+	fds[1].events = POLLIN;
+
+	while (likely(!quit)) {
+		poll(fds, array_size(fds), 1500);
+
+		for (i = 0; i < array_size(fds); ++i) {
+			if ((fds[i].revents & POLLIN) != POLLIN)
+				continue;
+
+			if (fds[i].fd == ssock) {
+				memset(msg, 0, sizeof(msg));
+				ret = recvfrom(ssock, msg, sizeof(msg), 0,
+					       &raddr, &raddrlen);
+				if (ret <= 0)
+					continue;
+				if (raddrlen != ecurr.addrlen)
+					continue;
+				if (memcmp(&raddr, &ecurr.addr, raddrlen))
+					continue;
+
+				if (thdr->fin == 1) {
+					whine("Remote end hung up!\n");
+					engine_play_busy(dev);
+					engine_play_busy(dev);
+					goto out_err;
+				}
+
+			}
+
+			if (fds[i].fd == usocki) {
+				ret = read(usocki, &cpkt, sizeof(cpkt));
+				if (ret <= 0)
+					continue;
+				if (cpkt.fin) {
+					memset(&msg, 0, sizeof(msg));
+					thdr = (struct transsip_hdr *) msg;
+					thdr->bsy = 1;
+
+					sendto(ssock, msg, sizeof(*thdr), 0,
+					       &ecurr.addr, ecurr.addrlen);
+
+					whine("You aborted call!\n");
+					goto out_err;
+				}
+				if (cpkt.take) {
+					memset(&msg, 0, sizeof(msg));
+					thdr = (struct transsip_hdr *) msg;
+					thdr->est = 1;
+					thdr->psh = 1;
+
+					ret = sendto(ssock, msg, sizeof(*thdr), 0,
+						     &ecurr.addr, ecurr.addrlen);
+					if (ret <= 0) {
+						whine("Error sending ack!\n");
+						goto out_err;
+					}
+
+					ecurr.active = 1;
+					whine("Call established!\n");
+					return ENGINE_STATE_SPEAKING;
+				}
+			}
+		}
+
+		engine_play_ring(dev);
+	}
+
+out_err:
 	return ENGINE_STATE_IDLE;
 }
 
@@ -293,23 +400,22 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 						int usocki, int usocko,
 						struct alsa_dev *dev)
 {
-	int ret, recv_started = 0, nfds = 0, tmp;
-	CELTMode *mode;
-	static CELTEncoder *encoder;
-	static CELTDecoder *decoder;
-	static JitterBuffer *jitter;
-	static SpeexEchoState *echostate;
+	ssize_t ret;
+	int recv_started = 0, nfds = 0, tmp, i;
 	struct pollfd *pfds = NULL;
 	char msg[MAX_MSG];
+	uint32_t send_seq = 0;
+	CELTMode *mode;
+	CELTEncoder *encoder;
+	CELTDecoder *decoder;
+	JitterBuffer *jitter;
+	SpeexEchoState *echostate;
+	struct sockaddr raddr;
+	struct transsip_hdr *thdr;
+	socklen_t raddrlen;
 
-	printf("In speaking!\n");
+	assert(ecurr.active == 1);
 
-	if (ecurr.active == 0) {
-		whine("Error occured, no active sock!\n");
-		return ENGINE_STATE_IDLE;
-	}
-
-#if 0
 	mode = celt_mode_create(SAMPLING_RATE, FRAME_SIZE, NULL);
 	encoder = celt_encoder_create(mode, CHANNELS, NULL);
 	decoder = celt_decoder_create(mode, CHANNELS, NULL);
@@ -327,45 +433,56 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 
 	alsa_getfds(dev, pfds, nfds);
 
-	pfds[nfds].fd = ssock;
+	pfds[nfds].fd = ecurr.sock;
 	pfds[nfds].events = POLLIN;
 
 	alsa_start(dev);
 
 	while (likely(!quit)) {
-		ret = poll(pfds, nfds + 1, -1);
-		if (ret < 0)
-			panic("Poll returned with %d!\n", ret);
+		poll(pfds, nfds + 1, -1);
 
 		if (pfds[nfds].revents & POLLIN) {
-			ssize_t len;
 			JitterBufferPacket packet;
-			struct transsip_hdr *hdr;
 
-			len = recv(ssock, msg, sizeof(msg), 0);
-			if (unlikely(len <= 0))
-				goto out_recv;
-			if (unlikely(hdr->psh == 0))
-				goto out_recv;
+			memset(msg, 0, sizeof(msg));
+			ret = recvfrom(ecurr.sock, msg, sizeof(msg), 0,
+				       &raddr, &raddrlen);
+			if (unlikely(ret <= 0))
+				goto out_err;
+			if (raddrlen != ecurr.addrlen ||
+			    memcmp(&raddr, &ecurr.addr, raddrlen)) {
+				memset(msg, 0, sizeof(msg));
 
-			hdr = (struct transsip_hdr *) msg;
-			packet.data = msg + sizeof(*hdr);
-			packet.len = len - sizeof(*hdr);
-			packet.timestamp = ntohl(hdr->seq);
+				thdr = (struct transsip_hdr *) msg;
+				thdr->bsy = 1;
+
+				sendto(ecurr.sock, msg, sizeof(*thdr), 0,
+				       &raddr, raddrlen);
+
+				goto out_alsa;
+			}
+
+			thdr = (struct transsip_hdr *) msg;
+			if (thdr->fin == 1 || thdr->psh == 0)
+				goto out_err;
+
+			packet.data = msg + sizeof(*thdr);
+			packet.len = ret - sizeof(*thdr);
+			packet.timestamp = ntohl(thdr->seq);
 			packet.span = FRAME_SIZE;
 			packet.sequence = 0;
 
 			jitter_buffer_put(jitter, &packet);
 			recv_started = 1;
 		}
-out_recv:
+out_alsa:
 		if (alsa_play_ready(dev, pfds, nfds)) {
-			int i;
 			short pcm[FRAME_SIZE * CHANNELS];
 
 			if (recv_started) {
 				JitterBufferPacket packet;
 
+				memset(msg, 0, sizeof(msg));
 				packet.data = msg;
 				packet.len  = MAX_MSG;
 
@@ -389,10 +506,8 @@ out_recv:
 		}
 
 		if (alsa_cap_ready(dev, pfds, nfds)) {
-			int i;
 			short pcm[FRAME_SIZE * CHANNELS];
 			short pcm2[FRAME_SIZE * CHANNELS];
-			char outpacket[MAX_MSG];
 
 			alsa_read(dev, pcm, FRAME_SIZE);
 
@@ -400,26 +515,42 @@ out_recv:
 			for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
 				pcm[i] = pcm2[i];
 
+			memset(msg, 0, sizeof(msg));
+			thdr = (struct transsip_hdr *) msg;
+
 			celt_encode(encoder, pcm, NULL, (unsigned char *)
-				    (outpacket + 4), PACKETSIZE);
+				    (msg + sizeof(*thdr)), PACKETSIZE);
 
-			/* Pseudo header: four null bytes and a 32-bit
-			   timestamp */
-			((int*)outpacket)[0] = send_timestamp;
-			send_timestamp += FRAME_SIZE;
+			thdr->psh = 1;
+			thdr->seq = htonl(send_seq);
+			send_seq += FRAME_SIZE;
 
-			sendto(ssock, outpacket, PACKETSIZE + 4, 0,
-				    (struct sockaddr *) &remote_addr,
-				    sizeof(remote_addr));
-			// error: abort call
+			ret = sendto(ecurr.sock, msg,
+				     PACKETSIZE + sizeof(*thdr), 0,
+				     &ecurr.addr, ecurr.addrlen);
+			if (ret <= 0) {
+				whine("Send datagram failed!\n");
+				goto out_err;
+			}
 		}
 	}
 
-//XXX: free celt stuff
+out_err:
+	if (ecurr.sock == *csock) {
+		close(*csock);
+		*csock = 0;
+	}
 
-//	alsa_stop(dev);
+	celt_encoder_destroy(encoder);
+	celt_decoder_destroy(decoder);
+	celt_mode_destroy(mode);
+
+	jitter_buffer_destroy(jitter);
+	speex_echo_state_destroy(echostate);
+
 	xfree(pfds);
-#endif
+
+	ecurr.active = 0;
 	return ENGINE_STATE_IDLE;
 }
 
@@ -433,7 +564,7 @@ static enum engine_state_num engine_do_idle(int ssock, int *csock, int usocki,
 	struct transsip_hdr *thdr;
 	struct cli_pkt cpkt;
 
-	printf("In idle!\n");
+	assert(ecurr.active == 0);
 
 	fds[0].fd = ssock;
 	fds[0].events = POLLIN;

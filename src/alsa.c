@@ -197,13 +197,13 @@ ssize_t alsa_read(struct alsa_dev *dev, short *pcm, size_t len)
 				       "failed: %s\n", snd_strerror(ret));
 			}
 			ret = snd_pcm_prepare(dev->capture_handle);
-			if (unlikely(ret < 0))
-				printf("Error preparing interface: %s\n",
-				       snd_strerror(ret));
+			//if (unlikely(ret < 0))
+			//	printf("Error preparing interface: %s\n",
+			//	       snd_strerror(ret));
 			ret = snd_pcm_start(dev->capture_handle);
-			if (unlikely(ret < 0))
-				printf("Error preparing interface: %s\n",
-				       snd_strerror(ret));
+			//if (unlikely(ret < 0))
+			//	printf("Error preparing interface: %s\n",
+			//	       snd_strerror(ret));
 		}
 	}
 	return ret;
@@ -223,9 +223,9 @@ ssize_t alsa_write(struct alsa_dev *dev, const short *pcm, size_t len)
 				       "failed: %s\n", snd_strerror(ret));
 			}
 			ret = snd_pcm_prepare(dev->playback_handle);
-			if (unlikely(ret < 0))
-				printf("Error preparing interface: %s\n",
-				       snd_strerror(ret));
+			//if (unlikely(ret < 0))
+			//	printf("Error preparing interface: %s\n",
+			//	       snd_strerror(ret));
 		}
 	}
 	return ret;

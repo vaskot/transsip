@@ -369,5 +369,17 @@ int cmd_hangup(char *arg)
 
 int cmd_take(char *arg)
 {
+	ssize_t ret;
+	struct cli_pkt cpkt;
+
+	memset(&cpkt, 0, sizeof(cpkt));
+	cpkt.take = 1;
+
+	ret = write(tsocko, &cpkt, sizeof(cpkt));
+	if (ret != sizeof(cpkt)) {
+		whine("Error notifying thread!\n");
+		return -EIO;
+	}
+
 	return 0;
 }
