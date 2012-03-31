@@ -1,3 +1,11 @@
+/*
+ * transsip - the telephony network
+ * By Daniel Borkmann <daniel@transsip.org>
+ * Copyright 2011, 2012 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
+ * Swiss federal institute of technology (ETH Zurich)
+ * Subject to the GPL, version 2.
+ */
+
 #ifndef BUILT_IN_H
 #define BUILT_IN_H
 
@@ -33,6 +41,7 @@
 # define __hidden		__attribute__((visibility("hidden")))
 #endif
 
+/* From Linux */
 #ifndef array_size
 # define array_size(x)		(sizeof(x) / sizeof((x)[0]) + __must_be_array(x))
 #endif
