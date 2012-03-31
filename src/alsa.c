@@ -290,4 +290,3 @@ void alsa_getfds(struct alsa_dev *dev, struct pollfd *pfds,
 	for (i = 0; i < dev->write_fds; ++i)
 		pfds[i + dev->read_fds] = dev->write_fd[i];
 }
-

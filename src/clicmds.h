@@ -43,4 +43,3 @@ static struct shell_cmd cmd_tree[] = {
 };
 
 #endif /* CLICMDS_H */
-
