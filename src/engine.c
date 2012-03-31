@@ -144,14 +144,10 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 
 	assert(ecurr.active == 0);
 
-	whine("In Callout!\n");
-
 	memset(&cpkt, 0, sizeof(cpkt));
 	ret = read(usocki, &cpkt, sizeof(cpkt));
-	if (ret != sizeof(cpkt)) {
-		whine("Error receiving packet from cmdline!\n");
+	if (ret != sizeof(cpkt))
 		return ENGINE_STATE_IDLE;
-	}
 	if (cpkt.ring == 0)
 		return ENGINE_STATE_IDLE;
 
@@ -304,20 +300,14 @@ static enum engine_state_num engine_do_callin(int ssock, int *csock, int usocki,
 
 	assert(ecurr.active == 0);
 
-	whine("In Callin!\n");
-
 	memset(&msg, 0, sizeof(msg));
 	ret = recvfrom(ssock, msg, sizeof(msg), 0, &raddr, &raddrlen);
-	if (ret <= 0) {
-		whine("error 1\n");
+	if (ret <= 0)
 		return ENGINE_STATE_IDLE;
-	}
 
 	thdr = (struct transsip_hdr *) msg;
-	if (thdr->est != 1) {
-		whine("error 2\n");
+	if (thdr->est != 1)
 		return ENGINE_STATE_IDLE;
-	}
 
 	memcpy(&ecurr.addr, &raddr, raddrlen);
 	ecurr.addrlen = raddrlen;
@@ -421,15 +411,12 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	CELTEncoder *encoder;
 	CELTDecoder *decoder;
 	JitterBuffer *jitter;
-	SpeexEchoState *echostate;
 	struct sockaddr raddr;
 	struct transsip_hdr *thdr;
 	socklen_t raddrlen;
 	struct cli_pkt cpkt;
 
 	assert(ecurr.active == 1);
-
-	whine("In Speaking!\n");
 
 	mode = celt_mode_create(SAMPLING_RATE, FRAME_SIZE, NULL);
 	encoder = celt_encoder_create(mode, CHANNELS, NULL);
@@ -438,10 +425,6 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	jitter = jitter_buffer_init(FRAME_SIZE);
 	tmp = FRAME_SIZE;
 	jitter_buffer_ctl(jitter, JITTER_BUFFER_SET_MARGIN, &tmp);
-
-	echostate = speex_echo_state_init(FRAME_SIZE, 10 * FRAME_SIZE);
-	tmp = SAMPLING_RATE;
-	speex_echo_ctl(echostate, SPEEX_ECHO_SET_SAMPLING_RATE, &tmp);
 
 	nfds = alsa_nfds(dev);
 	pfds = xmalloc(sizeof(*pfds) * (nfds + 2));
@@ -527,19 +510,12 @@ out_alsa:
 			}
 
 			alsa_write(dev, pcm, FRAME_SIZE);
-//				speex_echo_state_reset(echostate);
-//			speex_echo_playback(echostate, pcm);
 		}
 
 		if (alsa_cap_ready(dev, pfds, nfds)) {
 			short pcm[FRAME_SIZE * CHANNELS];
-			short pcm2[FRAME_SIZE * CHANNELS];
 
 			alsa_read(dev, pcm, FRAME_SIZE);
-
-//			speex_echo_capture(echostate, pcm, pcm2);
-//			for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
-//				pcm[i] = pcm2[i];
 
 			memset(msg, 0, sizeof(msg));
 			thdr = (struct transsip_hdr *) msg;
@@ -582,7 +558,6 @@ out_err:
 	celt_mode_destroy(mode);
 
 	jitter_buffer_destroy(jitter);
-	speex_echo_state_destroy(echostate);
 
 	xfree(pfds);
 
@@ -601,8 +576,6 @@ static enum engine_state_num engine_do_idle(int ssock, int *csock, int usocki,
 	struct cli_pkt cpkt;
 
 	assert(ecurr.active == 0);
-
-	whine("In Idle!\n");
 
 	fds[0].fd = ssock;
 	fds[0].events = POLLIN;
