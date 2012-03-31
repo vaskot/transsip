@@ -20,7 +20,9 @@ static int exit_val = 0;
 
 sig_atomic_t quit = 0;
 
-//extern sig_atomic_t did_stun;
+extern sig_atomic_t stun_done;
+
+extern void print_stun_probe(char *server, int sport, int tport);
 
 static void fetch_user(char *user, size_t len)
 {
@@ -259,8 +261,8 @@ void enter_shell_loop(int __tsocki, int __tsocko)
 
 	printf("\n%s%s%s shell\n\n", colorize_start(bold),
 	       PROGNAME_STRING " " VERSION_STRING, colorize_end());
-	//print_stun_probe(get_stun_server(), 3478, get_port());
-	//did_stun = 1;
+	print_stun_probe("stunserver.org", 3478, 30111);
+	stun_done = 1;
 	fflush(stdout);
 
 	while (!quit) {

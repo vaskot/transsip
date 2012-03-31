@@ -62,6 +62,8 @@ struct engine_state {
 
 extern sig_atomic_t quit;
 
+sig_atomic_t stun_done = 0;
+
 static char *alsadev = "plughw:0,0"; //XXX
 static char *port = "30111"; //XXX
 
@@ -654,6 +656,9 @@ void *engine_main(void *arg)
 
 	usocki = pp->i;
 	usocko = pp->o;
+
+	while (!stun_done)
+		sleep(0);
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_UNSPEC;

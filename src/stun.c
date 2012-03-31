@@ -1,15 +1,8 @@
-/*
- * transsip - the telephony network
- * By Daniel Borkmann <daniel@transsip.org>
- * Copyright 2011 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
- * Swiss federal institute of technology (ETH Zurich)
- * Subject to the GPL, version 2.
- */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <errno.h>
 #include <time.h>
 #include <unistd.h>
 #include <netdb.h>
@@ -21,7 +14,7 @@
 
 #include "xmalloc.h"
 #include "xutils.h"
-#include "stun.h"
+#include "die.h"
 
 /* Discovery type result */
 #define RESULT_NONE                   0
@@ -210,7 +203,7 @@ static int stun_test(const char *server_ip, int server_port,
 			break;
 
 		in.s_addr = addr->ip;
-		info("Public mapping %s:%u!\n", inet_ntoa(in), ntohs(addr->port));
+		printf("Public mapping %s:%u!\n", inet_ntoa(in), ntohs(addr->port));
 		break;
 next:
 		off += 4;

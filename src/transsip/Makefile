@@ -15,6 +15,7 @@ lib-objs    = xmalloc.o		\
 	      alsa.o		\
 	      engine.o		\
 	      xutils.o		\
+	      stun.o		\
 	      cli.o
 
 target      = transsip

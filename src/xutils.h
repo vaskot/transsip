@@ -92,4 +92,23 @@ static inline void register_signal(int signal, void (*handler)(int))
 	sigaction(signal, &saction, NULL);
 }
 
+static inline int set_timeout(struct timeval *timeval, unsigned int msec)
+{
+	if (msec == 0)
+		return -EINVAL;
+
+	timeval->tv_sec = 0;
+	timeval->tv_usec = 0;
+
+	if (msec < 1000) {
+		timeval->tv_usec = msec * 1000;
+		return 0;
+	}
+
+	timeval->tv_sec = (long) (msec / 1000);
+	timeval->tv_usec = (long) ((msec - (timeval->tv_sec * 1000)) * 1000);
+
+	return 0;
+}
+
 #endif /* XUTILS_H */
