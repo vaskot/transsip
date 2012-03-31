@@ -525,8 +525,8 @@ out_alsa:
 			}
 
 			alsa_write(dev, pcm, FRAME_SIZE);
-				speex_echo_state_reset(echostate);
-			speex_echo_playback(echostate, pcm);
+//				speex_echo_state_reset(echostate);
+//			speex_echo_playback(echostate, pcm);
 		}
 
 		if (alsa_cap_ready(dev, pfds, nfds)) {
@@ -535,9 +535,9 @@ out_alsa:
 
 			alsa_read(dev, pcm, FRAME_SIZE);
 
-			speex_echo_capture(echostate, pcm, pcm2);
-			for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
-				pcm[i] = pcm2[i];
+//			speex_echo_capture(echostate, pcm, pcm2);
+//			for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
+//				pcm[i] = pcm2[i];
 
 			memset(msg, 0, sizeof(msg));
 			thdr = (struct transsip_hdr *) msg;

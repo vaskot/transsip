@@ -190,20 +190,20 @@ ssize_t alsa_read(struct alsa_dev *dev, short *pcm, size_t len)
 	if (unlikely(ret != len)) {
 		if (ret < 0) {
 			if (ret == -EPIPE) {
-				//printf("An overrun has occured, "
-				//       "reseting capture!\n");
+				printf("An overrun has occured, "
+				       "reseting capture!\n");
 			} else {
 				printf("Read from audio interface "
 				       "failed: %s\n", snd_strerror(ret));
 			}
 			ret = snd_pcm_prepare(dev->capture_handle);
-			//if (unlikely(ret < 0))
-			//	printf("Error preparing interface: %s\n",
-			//	       snd_strerror(ret));
+			if (unlikely(ret < 0))
+				printf("Error preparing interface: %s\n",
+				       snd_strerror(ret));
 			ret = snd_pcm_start(dev->capture_handle);
-			//if (unlikely(ret < 0))
-			//	printf("Error preparing interface: %s\n",
-			//	       snd_strerror(ret));
+			if (unlikely(ret < 0))
+				printf("Error preparing interface: %s\n",
+				       snd_strerror(ret));
 		}
 	}
 	return ret;
@@ -216,16 +216,16 @@ ssize_t alsa_write(struct alsa_dev *dev, const short *pcm, size_t len)
 	if (unlikely(ret != len)) {
 		if (ret < 0) {
 			if (ret == -EPIPE) {
-				//printf("An underrun has occured, "
-				//       "reseting playback!\n");
+				printf("An underrun has occured, "
+				       "reseting playback!\n");
 			} else {
 				printf("Write to audio interface "
 				       "failed: %s\n", snd_strerror(ret));
 			}
 			ret = snd_pcm_prepare(dev->playback_handle);
-			//if (unlikely(ret < 0))
-			//	printf("Error preparing interface: %s\n",
-			//	       snd_strerror(ret));
+			if (unlikely(ret < 0))
+				printf("Error preparing interface: %s\n",
+				       snd_strerror(ret));
 		}
 	}
 	return ret;
