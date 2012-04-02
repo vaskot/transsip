@@ -86,9 +86,10 @@ static struct engine_curr ecurr;
 
 static void engine_play_file(struct alsa_dev *dev, enum engine_sound_type type)
 {
-	int fd;
+	int fd, nfds;
 	char path[PATH_MAX];
 	short pcm[FRAME_SIZE * CHANNELS];
+	struct pollfd *pfds = NULL;
 
 	memset(path, 0, sizeof(path));
 	switch (type) {
@@ -109,17 +110,26 @@ static void engine_play_file(struct alsa_dev *dev, enum engine_sound_type type)
 
 	memset(pcm, 0, sizeof(pcm));
 
+	nfds = alsa_nfds(dev);
+	pfds = xmalloc(sizeof(*pfds) * nfds);
+
+	alsa_getfds(dev, pfds, nfds);
 	alsa_start(dev);
 
 	while (read(fd, pcm, sizeof(pcm)) > 0) {
-		alsa_write(dev, pcm, FRAME_SIZE);
+		poll(pfds, nfds, -1);
+
+		if (alsa_play_ready(dev, pfds, nfds))
+			alsa_write(dev, pcm, FRAME_SIZE);
+
+		memset(pcm, 0, sizeof(pcm));
 		alsa_read(dev, pcm, FRAME_SIZE);
 		memset(pcm, 0, sizeof(pcm));
 	}
 
 	alsa_stop(dev);
-
 	close(fd);
+	xfree(pfds);
 }
 
 static inline void engine_play_ring(struct alsa_dev *dev)
@@ -230,6 +240,10 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 		poll(fds, array_size(fds), 1500);
 
 		for (i = 0; i < array_size(fds); ++i) {
+			if ((fds[i].revents & POLLERR) == POLLERR) {
+				printf("Destination unreachable?\n");
+				goto out_err;
+			}
 			if ((fds[i].revents & POLLIN) != POLLIN)
 				continue;
 
