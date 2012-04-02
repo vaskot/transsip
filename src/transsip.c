@@ -6,6 +6,7 @@
  * Subject to the GPL, version 2.
  */
 
+#include <sched.h>
 #include <pthread.h>
 
 #include "die.h"
@@ -30,6 +31,7 @@ int main(void)
 {
 	int ret;
 	int efd[2], refd[2];
+	struct sched_param param;
 
 	ret = pipe(efd);
 	if (ret < 0)
@@ -37,6 +39,10 @@ int main(void)
 	ret = pipe(refd);
 	if (ret < 0)
 		panic("Cannot create event fd!\n");
+
+	param.sched_priority = sched_get_priority_min(SCHED_FIFO);
+	if (sched_setscheduler(0, SCHED_FIFO, &param))
+		whine("Cannot set scheduler property!\n");
 
 	start_server(efd[0], refd[1]);
 	enter_shell_loop(refd[0], efd[1]);
