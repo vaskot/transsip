@@ -26,6 +26,7 @@
 #include "die.h"
 #include "xmalloc.h"
 #include "xutils.h"
+#include "call-notifier.h"
 
 #define SAMPLING_RATE	48000
 #define FRAME_SIZE	256
@@ -648,6 +649,8 @@ void *engine_main(void *arg)
 	struct addrinfo hints, *ahead, *ai;
 	struct alsa_dev *dev = NULL;
 	struct pipepair *pp = arg;
+
+	init_call_notifier();
 
 	usocki = pp->i;
 	usocko = pp->o;

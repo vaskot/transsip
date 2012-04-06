@@ -14,6 +14,8 @@ core-objs   = transsip.o
 lib-objs    = xmalloc.o		\
 	      alsa.o		\
 	      engine.o		\
+	      notifier.o	\
+	      call-notifier.o	\
 	      xutils.o		\
 	      stun.o		\
 	      cli.o

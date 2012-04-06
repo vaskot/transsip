@@ -69,6 +69,21 @@
 	})
 #endif
 
+#define anon(return_type, body_and_args)		\
+	({						\
+		return_type __fn__ body_and_args	\
+		__fn__;					\
+	})
+
+/*
+ * Example usage:
+ *
+ * qsort(&argv[1], argc - 1, sizeof(argv[1]),
+ *       anon(int, (const void * a, const void * b) {
+ *               return strcmp(*(char * const *) a, *(char * const *) b);
+ *       }));
+ */
+
 #ifndef bug
 # define bug()			__builtin_trap()
 #endif
