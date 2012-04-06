@@ -117,22 +117,17 @@ static void engine_play_file(struct alsa_dev *dev, enum engine_sound_type type)
 	alsa_getfds(dev, pfds, nfds);
 
 	memset(pcm, 0, sizeof(pcm));
-	while (read(fd, pcm, sizeof(pcm)) > 0) {
-		int done = 0;
+	while (read(fd, pcm, sizeof(pcm)) == sizeof(pcm)) {
+		poll(pfds, nfds, -1);
 
-		while (!done) {
-			poll(pfds, nfds, -1);
+		if (alsa_play_ready(dev, pfds, nfds)) {
+			alsa_write(dev, pcm, FRAME_SIZE);
+			memset(pcm, 0, sizeof(pcm));
+		}
 
-			if (alsa_play_ready(dev, pfds, nfds)) {
-				alsa_write(dev, pcm, FRAME_SIZE);
-				memset(pcm, 0, sizeof(pcm));
-				done = 1;
-			}
-
-			if (alsa_cap_ready(dev, pfds, nfds)) {
-				alsa_read(dev, pcm, FRAME_SIZE);
-				memset(pcm, 0, sizeof(pcm));
-			}
+		if (alsa_cap_ready(dev, pfds, nfds)) {
+			alsa_read(dev, pcm, FRAME_SIZE);
+			memset(pcm, 0, sizeof(pcm));
 		}
 	}
 
@@ -192,10 +187,14 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 
 	memset(&cpkt, 0, sizeof(cpkt));
 	ret = read(usocki, &cpkt, sizeof(cpkt));
-	if (ret != sizeof(cpkt))
+	if (ret != sizeof(cpkt)) {
+		whine("Read error from cli!\n");
 		return ENGINE_STATE_IDLE;
-	if (cpkt.ring == 0)
+	}
+	if (cpkt.ring == 0) {
+		whine("Read no ring flag from cli!\n");
 		return ENGINE_STATE_IDLE;
+	}
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = PF_UNSPEC;
@@ -259,8 +258,6 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 
 	fds[0].fd = *csock;
 	fds[0].events = POLLIN;
-//	fds[1].fd = ssock;
-//	fds[1].events = POLLIN;
 	fds[1].fd = usocki;
 	fds[1].events = POLLIN;
 
@@ -277,30 +274,16 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 
 			if (fds[i].fd == usocki) {
 				ret = read(usocki, &cpkt, sizeof(cpkt));
-				if (ret <= 0)
+				if (ret <= 0) {
+					whine("Read error from cli!\n");
 					continue;
+				}
 				if (cpkt.fin) {
 					whine("User aborted call!\n");
 					goto out_err;
 				}
 			}
 
-#if 0
-			if (fds[i].fd == ssock) {
-				memset(msg, 0, sizeof(msg));
-				ret = recvfrom(ssock, msg, sizeof(msg), 0,
-					       &raddr, &raddrlen);
-				if (ret <= 0)
-					continue;
-
-				memset(msg, 0, sizeof(msg));
-				thdr = (struct transsip_hdr *) msg;
-				thdr->bsy = 1;
-
-				sendto(ssock, msg, sizeof(*thdr), 0, &raddr,
-				       raddrlen);
-			}
-#endif
 			if (fds[i].fd == *csock) {
 				memset(msg, 0, sizeof(msg));
 				ret = recvfrom(*csock, msg, sizeof(msg), 0,
@@ -494,8 +477,10 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 
 		if (pfds[nfds + 1].revents & POLLIN) {
 			ret = read(usocki, &cpkt, sizeof(cpkt));
-			if (ret <= 0)
+			if (ret <= 0) {
+				whine("Read error from cli!\n");
 				continue;
+			}
 			if (cpkt.fin) {
 				whine("You aborted call!\n");
 				goto out_err;
