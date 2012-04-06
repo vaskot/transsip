@@ -57,7 +57,7 @@ static void setup_prompt(char *prompt, size_t len, char *state)
 	fetch_host(host, sizeof(host));
 
 	memset(prompt, 0, len);
-	slprintf(prompt, len, "%s@%s:%s> ", user, host, state);
+	slprintf(prompt, len, "\r%s@%s:%s> ", user, host, state);
 }
 
 static void find_list(struct shell_cmd **list, const char *token)

@@ -109,23 +109,31 @@ static void engine_play_file(struct alsa_dev *dev, enum engine_sound_type type)
 	if (fd < 0)
 		panic("Cannot open ring file!\n");
 
-	memset(pcm, 0, sizeof(pcm));
+	alsa_start(dev);
 
 	nfds = alsa_nfds(dev);
 	pfds = xmalloc(sizeof(*pfds) * nfds);
 
 	alsa_getfds(dev, pfds, nfds);
-	alsa_start(dev);
 
+	memset(pcm, 0, sizeof(pcm));
 	while (read(fd, pcm, sizeof(pcm)) > 0) {
-		poll(pfds, nfds, -1);
+		int done = 0;
 
-		if (alsa_play_ready(dev, pfds, nfds))
-			alsa_write(dev, pcm, FRAME_SIZE);
+		while (!done) {
+			poll(pfds, nfds, -1);
 
-		memset(pcm, 0, sizeof(pcm));
-		alsa_read(dev, pcm, FRAME_SIZE);
-		memset(pcm, 0, sizeof(pcm));
+			if (alsa_play_ready(dev, pfds, nfds)) {
+				alsa_write(dev, pcm, FRAME_SIZE);
+				memset(pcm, 0, sizeof(pcm));
+				done = 1;
+			}
+
+			if (alsa_cap_ready(dev, pfds, nfds)) {
+				alsa_read(dev, pcm, FRAME_SIZE);
+				memset(pcm, 0, sizeof(pcm));
+			}
+		}
 	}
 
 	alsa_stop(dev);
@@ -148,6 +156,25 @@ static inline void engine_play_dial(struct alsa_dev *dev)
 	engine_play_file(dev, ENGINE_SOUND_DIAL);
 }
 
+static void engine_decode_packet(uint8_t *pkt, size_t len)
+{
+	struct transsip_hdr *hdr;
+
+	if (len < sizeof(*hdr)) {
+		whine("[dbg] pkt too small!\n");
+		return;
+	}
+
+	hdr = (struct transsip_hdr *) pkt;
+	whine("[dbg] packet:\n");
+	whine("[dbg]   seq: %d\n", hdr->seq);
+	whine("[dbg]   est: %d\n", hdr->est);
+	whine("[dbg]   psh: %d\n", hdr->psh);
+	whine("[dbg]   bsy: %d\n", hdr->bsy);
+	whine("[dbg]   fin: %d\n", hdr->fin);
+	whine("[dbg]   res1: %d\n", hdr->res1);
+}
+
 static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki,
 					       int usocko, struct alsa_dev *dev)
 {
@@ -156,7 +183,7 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 	struct cli_pkt cpkt;
 	struct addrinfo hints, *ahead, *ai;
 	char msg[MAX_MSG];
-	struct pollfd fds[3];
+	struct pollfd fds[2];
 	struct sockaddr raddr;
 	socklen_t raddrlen;
 	struct transsip_hdr *thdr;
@@ -232,10 +259,10 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 
 	fds[0].fd = *csock;
 	fds[0].events = POLLIN;
-	fds[1].fd = ssock;
+//	fds[1].fd = ssock;
+//	fds[1].events = POLLIN;
+	fds[1].fd = usocki;
 	fds[1].events = POLLIN;
-	fds[2].fd = usocki;
-	fds[2].events = POLLIN;
 
 	while (!quit && tries++ < 100) {
 		poll(fds, array_size(fds), 1500);
@@ -258,6 +285,7 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 				}
 			}
 
+#if 0
 			if (fds[i].fd == ssock) {
 				memset(msg, 0, sizeof(msg));
 				ret = recvfrom(ssock, msg, sizeof(msg), 0,
@@ -272,7 +300,7 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 				sendto(ssock, msg, sizeof(*thdr), 0, &raddr,
 				       raddrlen);
 			}
-
+#endif
 			if (fds[i].fd == *csock) {
 				memset(msg, 0, sizeof(msg));
 				ret = recvfrom(*csock, msg, sizeof(msg), 0,
@@ -481,7 +509,10 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 			ret = recvfrom(ecurr.sock, msg, sizeof(msg), 0,
 				       &raddr, &raddrlen);
 			if (unlikely(ret <= 0))
-				goto out_err;
+				continue;
+
+			engine_decode_packet((uint8_t *) msg, ret);
+
 			if (raddrlen != ecurr.addrlen ||
 			    memcmp(&raddr, &ecurr.addr, raddrlen)) {
 				memset(msg, 0, sizeof(msg));
@@ -496,8 +527,10 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 			}
 
 			thdr = (struct transsip_hdr *) msg;
-			if (thdr->fin == 1 || thdr->psh == 0)
+			if (thdr->fin == 1) {
+				whine("Remote end hung up!\n");
 				goto out_err;
+			}
 
 			packet.data = msg + sizeof(*thdr);
 			packet.len = ret - sizeof(*thdr);
