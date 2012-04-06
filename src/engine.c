@@ -282,7 +282,7 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 					thdr->bsy = 1;
 					thdr->fin = 1;
 
-					sendto(ssock, msg, sizeof(*thdr), 0,
+					sendto(*csock, msg, sizeof(*thdr), 0,
 					       &ecurr.addr, ecurr.addrlen);
 
 					whine("You aborted call!\n");
@@ -520,6 +520,7 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 
 				thdr = (struct transsip_hdr *) msg;
 				thdr->bsy = 1;
+				thdr->fin = 1;
 
 				sendto(ecurr.sock, msg, sizeof(*thdr), 0,
 				       &raddr, raddrlen);
