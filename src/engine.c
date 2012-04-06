@@ -280,6 +280,7 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 					memset(&msg, 0, sizeof(msg));
 					thdr = (struct transsip_hdr *) msg;
 					thdr->bsy = 1;
+					thdr->fin = 1;
 
 					sendto(ssock, msg, sizeof(*thdr), 0,
 					       &ecurr.addr, ecurr.addrlen);
@@ -310,7 +311,7 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 					whine("Call established!\n");
 					return ENGINE_STATE_SPEAKING;
 				}
-				if (thdr->bsy == 1) {
+				if (thdr->bsy == 1 || thdr->fin == 1) {
 					whine("Remote end busy!\n");
 					engine_play_busy(dev);
 					engine_play_busy(dev);
@@ -413,6 +414,7 @@ static enum engine_state_num engine_do_callin(int ssock, int *csock, int usocki,
 					memset(&msg, 0, sizeof(msg));
 					thdr = (struct transsip_hdr *) msg;
 					thdr->bsy = 1;
+					thdr->fin = 1;
 
 					sendto(ssock, msg, sizeof(*thdr), 0,
 					       &ecurr.addr, ecurr.addrlen);
