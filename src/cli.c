@@ -19,17 +19,18 @@
 #include "xmalloc.h"
 #include "xutils.h"
 #include "built-in.h"
+#include "call-notifier.h"
 #include "die.h"
 
 #define FETCH_LIST  0
 #define FETCH_ELEM  1
 
-static int exit_val = 0;
-
+static int exit_val = 0, tsocki, tsocko;
 sig_atomic_t quit = 0;
+static char *prompt = NULL;
+static size_t prompt_len = 256;
 
 extern sig_atomic_t stun_done;
-
 extern int print_stun_probe(char *server, int sport, int tport);
 
 static void fetch_user(char *user, size_t len)
@@ -48,7 +49,7 @@ static void fetch_host(char *host, size_t len)
 	host[len - 1] = 0;
 }
 
-static void setup_prompt(char *prompt, size_t len)
+static void setup_prompt(char *prompt, size_t len, char *state)
 {
 	char user[64], host[64];
 
@@ -56,7 +57,7 @@ static void setup_prompt(char *prompt, size_t len)
 	fetch_host(host, sizeof(host));
 
 	memset(prompt, 0, len);
-	slprintf(prompt, len, "%s@%s> ", user, host);
+	slprintf(prompt, len, "%s@%s:%s> ", user, host, state);
 }
 
 static void find_list(struct shell_cmd **list, const char *token)
@@ -252,30 +253,79 @@ static char *strip_white(char *line)
 	return l;
 }
 
-static int tsocki, tsocko;
+static int call_event_hook_handle_changed(int num)
+{
+	switch (num) {
+	case CALL_STATE_MACHINE_IDLE:
+		setup_prompt(prompt, prompt_len, "idle");
+		break;
+	case CALL_STATE_MACHINE_CALLIN:
+		setup_prompt(prompt, prompt_len, "call-in");
+		break;
+	case CALL_STATE_MACHINE_CALLOUT:
+		setup_prompt(prompt, prompt_len, "call-out");
+		break;
+	case CALL_STATE_MACHINE_SPEAKING:
+		setup_prompt(prompt, prompt_len, "speaking");
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+static int call_event_hook(const struct event_block *self,
+			   unsigned long event, const void *arg)
+{
+	int ret = 0;
+
+	switch (event) {
+	case CALL_STATE_MACHINE_CHANGED: {
+		int num = *(int *) arg;
+		ret = call_event_hook_handle_changed(num);
+		break; }
+	default:
+		break;
+	}
+
+	return ret;
+}
+
+struct event_block call_event = {
+	.prio = PRIO_MEDIUM,
+	.hook = call_event_hook,
+};
+
+static inline void print_shell_header(void)
+{
+	printf("\n%s%s%s shell\n\n", colorize_start(bold),
+	       PROGNAME_STRING " " VERSION_STRING, colorize_end());
+}
+
+static inline void init_stun(void)
+{
+	int ret = print_stun_probe("stunserver.org", 3478, 30111);
+	if (ret < 0)
+		printf("STUN failed!\n");
+	stun_done = 1;
+	fflush(stdout);
+}
 
 void enter_shell_loop(int __tsocki, int __tsocko)
 {
-	int ret;
-	char *prompt;
 	char *line, *cmd;
-	size_t prompt_len = 256;
 
 	tsocki = __tsocki;
 	tsocko = __tsocko;
 
 	prompt = xzmalloc(prompt_len);
-	setup_prompt(prompt, prompt_len);
+
+	setup_prompt(prompt, prompt_len, "idle");
 	setup_readline();
-
-	printf("\n%s%s%s shell\n\n", colorize_start(bold),
-	       PROGNAME_STRING " " VERSION_STRING, colorize_end());
-
-	ret = print_stun_probe("stunserver.org", 3478, 30111);
-	if (ret < 0)
-		printf("STUN failed!\n");
-	stun_done = 1;
-	fflush(stdout);
+	print_shell_header();
+	init_stun();
+	register_call_notifier(&call_event);
 
 	while (!quit) {
 		line = readline(prompt);

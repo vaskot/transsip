@@ -37,5 +37,5 @@ build: $(lib-objs) $(core-objs)
 	@$(CC) $(CFLAGS) $(INCLUDE) $<
 
 clean:
-	@rm *.o *~ $(target) || true
+	@rm *.o $(target) || true
 

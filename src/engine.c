@@ -45,10 +45,10 @@ struct transsip_hdr {
 } __attribute__((packed));
 
 enum engine_state_num {
-	ENGINE_STATE_IDLE = 0,
-	ENGINE_STATE_CALLOUT,
-	ENGINE_STATE_CALLIN,
-	ENGINE_STATE_SPEAKING,
+	ENGINE_STATE_IDLE = CALL_STATE_MACHINE_IDLE,
+	ENGINE_STATE_CALLOUT = CALL_STATE_MACHINE_CALLOUT,
+	ENGINE_STATE_CALLIN = CALL_STATE_MACHINE_CALLIN,
+	ENGINE_STATE_SPEAKING = CALL_STATE_MACHINE_SPEAKING,
 	__ENGINE_STATE_MAX,
 };
 
@@ -710,6 +710,8 @@ void *engine_main(void *arg)
 
 	state = ENGINE_STATE_IDLE;
 	while (likely(!quit)) {
+		int arg = state;
+		call_notifier_exec(CALL_STATE_MACHINE_CHANGED, &arg);
 		state = state_machine[state].process(ssock, &csock,
 						     usocki, usocko,
 						     dev);
