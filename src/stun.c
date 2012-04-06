@@ -29,7 +29,7 @@
 
 #define MAPPED_ADDRESS                0x0001
 
-#define TIMEOUT                       1000
+#define TIMEOUT                       5000
 #define REQUEST_LEN                   20
 
 #define ID_COOKIE_FIELD               htonl(((int) 'a' << 24) + \

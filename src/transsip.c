@@ -41,8 +41,7 @@ int main(void)
 		panic("Cannot create event fd!\n");
 
 	param.sched_priority = sched_get_priority_min(SCHED_FIFO);
-	if (sched_setscheduler(0, SCHED_FIFO, &param))
-		whine("Cannot set scheduler property!\n");
+	sched_setscheduler(0, SCHED_FIFO, &param);
 
 	start_server(efd[0], refd[1]);
 	enter_shell_loop(refd[0], efd[1]);
