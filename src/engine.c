@@ -117,18 +117,16 @@ static void engine_play_file(struct alsa_dev *dev, enum engine_sound_type type)
 	alsa_getfds(dev, pfds, nfds);
 
 	memset(pcm, 0, sizeof(pcm));
-	while (read(fd, pcm, sizeof(pcm)) == sizeof(pcm)) {
+	while (read(fd, pcm, sizeof(pcm)) > 0) {
 		poll(pfds, nfds, -1);
 
-		if (alsa_play_ready(dev, pfds, nfds)) {
+		if (alsa_play_ready(dev, pfds, nfds))
 			alsa_write(dev, pcm, FRAME_SIZE);
-			memset(pcm, 0, sizeof(pcm));
-		}
+		memset(pcm, 0, sizeof(pcm));
 
-		if (alsa_cap_ready(dev, pfds, nfds)) {
+		if (alsa_cap_ready(dev, pfds, nfds))
 			alsa_read(dev, pcm, FRAME_SIZE);
-			memset(pcm, 0, sizeof(pcm));
-		}
+		memset(pcm, 0, sizeof(pcm));
 	}
 
 	alsa_stop(dev);
@@ -496,8 +494,6 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 			if (unlikely(ret <= 0))
 				continue;
 
-			engine_decode_packet((uint8_t *) msg, ret);
-
 			if (raddrlen != ecurr.addrlen ||
 			    memcmp(&raddr, &ecurr.addr, raddrlen)) {
 				memset(msg, 0, sizeof(msg));
@@ -635,15 +631,20 @@ static enum engine_state_num engine_do_idle(int ssock, int *csock, int usocki,
 				ret = recv(ssock, msg, sizeof(msg), MSG_PEEK);
 				if (ret <= 0)
 					continue;
+
 				thdr = (struct transsip_hdr *) msg;
 				if (thdr->est == 1)
 					return ENGINE_STATE_CALLIN;
+				else
+					recv(ssock, msg, sizeof(msg), 0);
 			}
 
 			if (fds[i].fd == usocki) {
 				ret = read(usocki, &cpkt, sizeof(cpkt));
-				if (ret <= 0)
+				if (ret <= 0) {
+					whine("Error reading from cli!\n");
 					continue;
+				}
 				if (cpkt.ring)
 					return ENGINE_STATE_CALLOUT;
 			}
