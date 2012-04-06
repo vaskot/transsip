@@ -284,10 +284,14 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 
 			if (fds[i].fd == *csock) {
 				memset(msg, 0, sizeof(msg));
+				raddrlen = sizeof(raddr);
 				ret = recvfrom(*csock, msg, sizeof(msg), 0,
 					       &raddr, &raddrlen);
 				if (ret <= 0)
 					continue;
+
+				engine_decode_packet((uint8_t *) msg, ret);
+
 				if (raddrlen != ecurr.addrlen)
 					continue;
 				if (memcmp(&raddr, &ecurr.addr, raddrlen))
@@ -333,9 +337,12 @@ static enum engine_state_num engine_do_callin(int ssock, int *csock, int usocki,
 	assert(ecurr.active == 0);
 
 	memset(&msg, 0, sizeof(msg));
+	raddrlen = sizeof(raddr);
 	ret = recvfrom(ssock, msg, sizeof(msg), 0, &raddr, &raddrlen);
-	if (ret <= 0)
+	if (ret <= 0) {
+		whine("Receive error %s!\n", strerror(errno));
 		return ENGINE_STATE_IDLE;
+	}
 
 	thdr = (struct transsip_hdr *) msg;
 	if (thdr->est != 1)
@@ -370,6 +377,7 @@ static enum engine_state_num engine_do_callin(int ssock, int *csock, int usocki,
 
 			if (fds[i].fd == ssock) {
 				memset(msg, 0, sizeof(msg));
+				raddrlen = sizeof(raddr);
 				ret = recvfrom(ssock, msg, sizeof(msg), 0,
 					       &raddr, &raddrlen);
 				if (ret <= 0)
@@ -390,8 +398,10 @@ static enum engine_state_num engine_do_callin(int ssock, int *csock, int usocki,
 
 			if (fds[i].fd == usocki) {
 				ret = read(usocki, &cpkt, sizeof(cpkt));
-				if (ret <= 0)
+				if (ret <= 0) {
+					whine("Error reading from cli!\n");
 					continue;
+				}
 				if (cpkt.fin) {
 					memset(&msg, 0, sizeof(msg));
 					thdr = (struct transsip_hdr *) msg;
@@ -489,6 +499,7 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 			JitterBufferPacket packet;
 
 			memset(msg, 0, sizeof(msg));
+			raddrlen = sizeof(raddr);
 			ret = recvfrom(ecurr.sock, msg, sizeof(msg), 0,
 				       &raddr, &raddrlen);
 			if (unlikely(ret <= 0))
@@ -602,6 +613,12 @@ out_err:
 	return ENGINE_STATE_IDLE;
 }
 
+static inline void engine_drop_from_queue(int sock)
+{
+	char msg[MAX_MSG];
+	recv(sock, msg, sizeof(msg), 0);
+}
+
 static enum engine_state_num engine_do_idle(int ssock, int *csock, int usocki,
 					    int usocko, struct alsa_dev *dev)
 {
@@ -629,14 +646,16 @@ static enum engine_state_num engine_do_idle(int ssock, int *csock, int usocki,
 
 			if (fds[i].fd == ssock) {
 				ret = recv(ssock, msg, sizeof(msg), MSG_PEEK);
-				if (ret <= 0)
+				if (ret < 0)
 					continue;
+				if (ret < sizeof(struct transsip_hdr))
+					engine_drop_from_queue(ssock);
 
 				thdr = (struct transsip_hdr *) msg;
 				if (thdr->est == 1)
 					return ENGINE_STATE_CALLIN;
 				else
-					recv(ssock, msg, sizeof(msg), 0);
+					engine_drop_from_queue(ssock);
 			}
 
 			if (fds[i].fd == usocki) {
