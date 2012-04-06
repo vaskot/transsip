@@ -652,7 +652,7 @@ static enum engine_state_num engine_do_idle(int ssock, int *csock, int usocki,
 					engine_drop_from_queue(ssock);
 
 				thdr = (struct transsip_hdr *) msg;
-				if (thdr->est == 1)
+				if (thdr->est == 1 && thdr->psh == 0)
 					return ENGINE_STATE_CALLIN;
 				else
 					engine_drop_from_queue(ssock);
