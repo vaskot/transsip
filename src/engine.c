@@ -487,8 +487,8 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	one = 1;
 	preprocess = speex_preprocess_state_init(FRAME_SIZE, SAMPLING_RATE);
 	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_DENOISE, &one);
-//	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_ECHO_STATE,
-//			     echo_state);
+	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_ECHO_STATE,
+			     echo_state);
 
 	nfds = alsa_nfds(dev);
 	pfds = xmalloc(sizeof(*pfds) * (nfds + 2));
@@ -591,9 +591,9 @@ out_alsa:
 
 			alsa_read(dev, pcm, FRAME_SIZE);
 
-//			speex_echo_capture(echo_state, pcm, pcm2);
-//			for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
-//		            pcm[i] = pcm2[i];
+			speex_echo_capture(echo_state, pcm, pcm2);
+			for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
+				pcm[i] = pcm2[i];
 
 			speex_preprocess_run(preprocess, pcm);
 
