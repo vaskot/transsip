@@ -32,7 +32,6 @@
 #define SAMPLING_RATE	48000
 #define FRAME_SIZE	256
 #define PACKETSIZE	43
-#define CHANNELS	1
 #define MAX_MSG		1500
 #define PATH_MAX	512
 
@@ -90,7 +89,7 @@ static void engine_play_file(struct alsa_dev *dev, enum engine_sound_type type)
 {
 	int fd, nfds;
 	char path[PATH_MAX];
-	short pcm[FRAME_SIZE * CHANNELS];
+	short pcm[FRAME_SIZE];
 	struct pollfd *pfds = NULL;
 
 	memset(path, 0, sizeof(path));
@@ -471,8 +470,8 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	assert(ecurr.active == 1);
 
 	mode = celt_mode_create(SAMPLING_RATE, FRAME_SIZE, NULL);
-	encoder = celt_encoder_create(mode, CHANNELS, NULL);
-	decoder = celt_decoder_create(mode, CHANNELS, NULL);
+	encoder = celt_encoder_create(mode, 1, NULL);
+	decoder = celt_decoder_create(mode, 1, NULL);
 
 	jitter = jitter_buffer_init(FRAME_SIZE);
 	tmp = FRAME_SIZE;
@@ -558,7 +557,7 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 		}
 out_alsa:
 		if (alsa_play_ready(dev, pfds, nfds)) {
-			short pcm[FRAME_SIZE * CHANNELS];
+			short pcm[FRAME_SIZE];
 
 			if (recv_started) {
 				JitterBufferPacket packet;
@@ -576,7 +575,7 @@ out_alsa:
 				celt_decode(decoder, (const unsigned char *)
 					    packet.data, packet.len, pcm);
 			} else {
-				for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
+				for (i = 0; i < FRAME_SIZE; ++i)
 					pcm[i] = 0;
 			}
 
@@ -586,13 +585,13 @@ out_alsa:
 		}
 
 		if (alsa_cap_ready(dev, pfds, nfds)) {
-			short pcm[FRAME_SIZE * CHANNELS];
-			short pcm2[FRAME_SIZE * CHANNELS];
+			short pcm[FRAME_SIZE];
+			short pcm2[FRAME_SIZE];
 
 			alsa_read(dev, pcm, FRAME_SIZE);
 
 			speex_echo_capture(echo_state, pcm, pcm2);
-			for (i = 0; i < FRAME_SIZE * CHANNELS; ++i)
+			for (i = 0; i < FRAME_SIZE; ++i)
 				pcm[i] = pcm2[i];
 
 			speex_preprocess_run(preprocess, pcm);
@@ -636,6 +635,7 @@ out_err:
 	celt_decoder_destroy(decoder);
 	celt_mode_destroy(mode);
 
+	speex_preprocess_state_destroy(preprocess);
 	jitter_buffer_destroy(jitter);
 
 	xfree(pfds);
@@ -774,7 +774,7 @@ void *engine_main(void *arg)
 	if (ssock < 0)
 		panic("Cannot open socket!\n");
 
-	dev = alsa_open(alsadev, SAMPLING_RATE, CHANNELS, FRAME_SIZE);
+	dev = alsa_open(alsadev, SAMPLING_RATE, 1, FRAME_SIZE);
 	if (!dev)
 		panic("Cannot open ALSA device %s!\n", alsadev);
 
