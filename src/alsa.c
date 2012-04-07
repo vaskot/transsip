@@ -198,8 +198,9 @@ ssize_t alsa_read(struct alsa_dev *dev, short *pcm, size_t len)
 				printf("Error preparing interface: %s\n",
 				       snd_strerror(ret));
 		}
+		return 1;
 	}
-	return ret;
+	return 0;
 }
 
 ssize_t alsa_write(struct alsa_dev *dev, const short *pcm, size_t len)
@@ -213,8 +214,9 @@ ssize_t alsa_write(struct alsa_dev *dev, const short *pcm, size_t len)
 				printf("Error preparing interface: %s\n",
 				       snd_strerror(ret));
 		}
+		return 1;
 	}
-	return ret;
+	return 0;
 }
 
 int alsa_cap_ready(struct alsa_dev *dev, struct pollfd *pfds,

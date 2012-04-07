@@ -487,6 +487,8 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	one = 1;
 	preprocess = speex_preprocess_state_init(FRAME_SIZE, SAMPLING_RATE);
 	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_DENOISE, &one);
+	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_AGC, &one);
+	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_DEREVERB, &one);
 	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_ECHO_STATE,
 			     echo_state);
 
