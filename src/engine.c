@@ -120,12 +120,10 @@ static void engine_play_file(struct alsa_dev *dev, enum engine_sound_type type)
 	while (read(fd, pcm, sizeof(pcm)) > 0) {
 		poll(pfds, nfds, -1);
 
-		if (alsa_play_ready(dev, pfds, nfds))
-			alsa_write(dev, pcm, FRAME_SIZE);
+		alsa_write(dev, pcm, FRAME_SIZE);
 		memset(pcm, 0, sizeof(pcm));
 
-		if (alsa_cap_ready(dev, pfds, nfds))
-			alsa_read(dev, pcm, FRAME_SIZE);
+		alsa_read(dev, pcm, FRAME_SIZE);
 		memset(pcm, 0, sizeof(pcm));
 	}
 
