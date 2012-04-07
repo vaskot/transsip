@@ -15,8 +15,10 @@
 #include <unistd.h>
 #include <celt/celt.h>
 #include <speex/speex_jitter.h>
-#include <speex/speex_echo.h>
-#include <speex/speex_preprocess.h>
+#ifdef HAS_SPEEX_AEC
+# include <speex/speex_echo.h>
+# include <speex/speex_preprocess.h>
+#endif
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -450,7 +452,7 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 						struct alsa_dev *dev)
 {
 	ssize_t ret;
-	int recv_started = 0, nfds = 0, tmp, i, one;
+	int recv_started = 0, nfds = 0, tmp, i;
 	struct pollfd *pfds = NULL;
 	char msg[MAX_MSG];
 	uint32_t send_seq = 0;
@@ -458,8 +460,11 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	CELTEncoder *encoder;
 	CELTDecoder *decoder;
 	JitterBuffer *jitter;
+#ifdef HAS_SPEEX_AEC
 	SpeexPreprocessState *preprocess;
 	SpeexEchoState *echo_state;
+	int one;
+#endif
 	struct sockaddr raddr;
 	struct transsip_hdr *thdr;
 	socklen_t raddrlen;
@@ -475,6 +480,7 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	tmp = FRAME_SIZE;
 	jitter_buffer_ctl(jitter, JITTER_BUFFER_SET_MARGIN, &tmp);
 
+#ifdef HAS_SPEEX_AEC
 	echo_state = speex_echo_state_init(FRAME_SIZE, 10 * FRAME_SIZE);
 	tmp = SAMPLING_RATE;
 	speex_echo_ctl(echo_state, SPEEX_ECHO_SET_SAMPLING_RATE, &tmp);
@@ -486,6 +492,7 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_DEREVERB, &one);
 	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_ECHO_STATE,
 			     echo_state);
+#endif
 
 	nfds = alsa_nfds(dev);
 	pfds = xmalloc(sizeof(*pfds) * (nfds + 2));
@@ -576,24 +583,27 @@ out_alsa:
 				for (i = 0; i < FRAME_SIZE; ++i)
 					pcm[i] = 0;
 			}
-
+#ifdef HAS_SPEEX_AEC
 			if (alsa_write(dev, pcm, FRAME_SIZE))
 				speex_echo_state_reset(echo_state);
 			speex_echo_playback(echo_state, pcm);
+#else
+			alsa_write(dev, pcm, FRAME_SIZE);
+#endif
 		}
 
 		if (alsa_cap_ready(dev, pfds, nfds)) {
 			short pcm[FRAME_SIZE];
-			short pcm2[FRAME_SIZE];
 
 			alsa_read(dev, pcm, FRAME_SIZE);
-
+#ifdef HAS_SPEEX_AEC
+			short pcm2[FRAME_SIZE];
 			speex_echo_capture(echo_state, pcm, pcm2);
 			for (i = 0; i < FRAME_SIZE; ++i)
 				pcm[i] = pcm2[i];
 
 			speex_preprocess_run(preprocess, pcm);
-
+#endif
 			celt_encode(encoder, pcm, NULL, (unsigned char *)
 				    (msg + sizeof(*thdr)), PACKETSIZE);
 
@@ -632,10 +642,10 @@ out_err:
 	celt_encoder_destroy(encoder);
 	celt_decoder_destroy(decoder);
 	celt_mode_destroy(mode);
-
+#ifdef HAS_SPEEX_AEC
 	speex_preprocess_state_destroy(preprocess);
 	jitter_buffer_destroy(jitter);
-
+#endif
 	xfree(pfds);
 
 	ecurr.active = 0;
