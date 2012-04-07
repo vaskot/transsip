@@ -6,6 +6,7 @@
  * Subject to the GPL, version 2.
  */
 
+#define HAS_SPEEX_AEC
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -461,7 +462,7 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	CELTDecoder *decoder;
 	JitterBuffer *jitter;
 #ifdef HAS_SPEEX_AEC
-	SpeexPreprocessState *preprocess;
+//	SpeexPreprocessState *preprocess;
 	SpeexEchoState *echo_state;
 	int one;
 #endif
@@ -485,13 +486,13 @@ static enum engine_state_num engine_do_speaking(int ssock, int *csock,
 	tmp = SAMPLING_RATE;
 	speex_echo_ctl(echo_state, SPEEX_ECHO_SET_SAMPLING_RATE, &tmp);
 
-	one = 1;
-	preprocess = speex_preprocess_state_init(FRAME_SIZE, SAMPLING_RATE);
-	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_DENOISE, &one);
-	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_AGC, &one);
-	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_DEREVERB, &one);
-	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_ECHO_STATE,
-			     echo_state);
+//	one = 1;
+//	preprocess = speex_preprocess_state_init(FRAME_SIZE, SAMPLING_RATE);
+//	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_DENOISE, &one);
+//	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_AGC, &one);
+//	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_DEREVERB, &one);
+//	speex_preprocess_ctl(preprocess, SPEEX_PREPROCESS_SET_ECHO_STATE,
+//			     echo_state);
 #endif
 
 	nfds = alsa_nfds(dev);
@@ -602,7 +603,7 @@ out_alsa:
 			for (i = 0; i < FRAME_SIZE; ++i)
 				pcm[i] = pcm2[i];
 
-			speex_preprocess_run(preprocess, pcm);
+//			speex_preprocess_run(preprocess, pcm);
 #endif
 			celt_encode(encoder, pcm, NULL, (unsigned char *)
 				    (msg + sizeof(*thdr)), PACKETSIZE);
@@ -643,7 +644,7 @@ out_err:
 	celt_decoder_destroy(decoder);
 	celt_mode_destroy(mode);
 #ifdef HAS_SPEEX_AEC
-	speex_preprocess_state_destroy(preprocess);
+//	speex_preprocess_state_destroy(preprocess);
 	jitter_buffer_destroy(jitter);
 #endif
 	xfree(pfds);
