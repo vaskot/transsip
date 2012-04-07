@@ -26,11 +26,11 @@
 #define FETCH_ELEM  1
 
 static int exit_val = 0, tsocki, tsocko;
-sig_atomic_t quit = 0;
+volatile sig_atomic_t quit = 0;
 static char *prompt = NULL;
 static size_t prompt_len = 256;
 
-extern sig_atomic_t stun_done;
+extern volatile sig_atomic_t stun_done;
 extern int print_stun_probe(char *server, int sport, int tport);
 
 static void fetch_user(char *user, size_t len)
@@ -331,6 +331,7 @@ void enter_shell_loop(int __tsocki, int __tsocko)
 		line = readline(prompt);
 		if (!line) {
 			printf("\n");
+			quit = 1;
 			break;
 		}
 

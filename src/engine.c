@@ -70,9 +70,9 @@ struct engine_state {
 	.process = (f)		\
 }
 
-extern sig_atomic_t quit;
+extern volatile sig_atomic_t quit;
 
-sig_atomic_t stun_done = 0;
+volatile sig_atomic_t stun_done = 0;
 
 static char *alsadev = "plughw:0,0"; //XXX
 static char *port = "30111"; //XXX
@@ -672,7 +672,8 @@ static enum engine_state_num engine_do_idle(int ssock, int *csock, int usocki,
 	while (likely(!quit)) {
 		memset(msg, 0, sizeof(msg));
 
-		poll(fds, array_size(fds), -1);
+		poll(fds, array_size(fds), 1000);
+
 		for (i = 0; i < array_size(fds); ++i) {
 			if ((fds[i].revents & POLLIN) != POLLIN)
 				continue;

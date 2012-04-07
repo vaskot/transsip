@@ -27,6 +27,11 @@ static void start_server(int usocki, int usocko)
 		panic("Cannot create server thread!\n");
 }
 
+static void stop_server(void)
+{
+	pthread_join(tid, NULL);
+}
+
 int main(void)
 {
 	int ret;
@@ -45,6 +50,7 @@ int main(void)
 
 	start_server(efd[0], refd[1]);
 	enter_shell_loop(refd[0], efd[1]);
+	stop_server();
 
 	close(efd[0]);
 	close(efd[1]);
