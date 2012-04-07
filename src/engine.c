@@ -150,7 +150,7 @@ static inline void engine_play_dial(struct alsa_dev *dev)
 	engine_play_file(dev, ENGINE_SOUND_DIAL);
 }
 
-static void engine_decode_packet(uint8_t *pkt, size_t len)
+void engine_decode_packet(uint8_t *pkt, size_t len)
 {
 	struct transsip_hdr *hdr;
 
@@ -298,8 +298,6 @@ static enum engine_state_num engine_do_callout(int ssock, int *csock, int usocki
 					       &raddr, &raddrlen);
 				if (ret <= 0)
 					continue;
-
-				engine_decode_packet((uint8_t *) msg, ret);
 
 				if (raddrlen != ecurr.addrlen)
 					continue;
