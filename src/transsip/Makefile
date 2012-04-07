@@ -1,9 +1,4 @@
-#
-# Makefile for transsip
-# Author: Daniel Borkmann
-#
-
-include ../definitions.mk
+include definitions.mk
 
 INCLUDE     = -I.. -I./include/
 LIBS        = -lspeexdsp -lasound -lcelt0 -lm -lreadline -lpthread
@@ -18,7 +13,8 @@ lib-objs    = xmalloc.o		\
 	      call-notifier.o	\
 	      xutils.o		\
 	      stun.o		\
-	      cli.o
+	      cli.o		\
+	      clicmds.o
 
 target      = transsip
 

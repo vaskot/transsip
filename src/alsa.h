@@ -1,5 +1,5 @@
 /*
- * transsip - the telephony network
+ * transsip - the telephony toolkit
  * By Daniel Borkmann <daniel@transsip.org>
  * Copyright 2011, 2012 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
  * Swiss federal institute of technology (ETH Zurich)
@@ -12,6 +12,7 @@
 #include <sys/poll.h>
 
 struct alsa_dev;
+
 extern struct alsa_dev *alsa_open(char *devname, unsigned int rate,
 				  int channels, int period);
 extern void alsa_close(struct alsa_dev *dev);

@@ -1,5 +1,5 @@
 /*
- * transsip - the telephony network
+ * transsip - the telephony toolkit
  * By Daniel Borkmann <daniel@transsip.org>
  * Copyright 2011, 2012 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
  * Swiss federal institute of technology (ETH Zurich)
@@ -22,16 +22,46 @@
 #include "call-notifier.h"
 #include "die.h"
 
-#define FETCH_LIST  0
-#define FETCH_ELEM  1
+#define MAX_MENU_ELEMS		100
+#define FETCH_LIST		0
+#define FETCH_ELEM		1
 
-static int exit_val = 0, tsocki, tsocko;
+static int exit_val = 0;
+
 volatile sig_atomic_t quit = 0;
+
 static char *prompt = NULL;
+
 static size_t prompt_len = 256;
 
 extern volatile sig_atomic_t stun_done;
+
 extern int print_stun_probe(char *server, int sport, int tport);
+
+extern void init_cli_cmds(int ti, int to);
+
+static struct shell_cmd show_node[] = {
+	{ "settings", cmd_help, "Show settings", NULL, },
+	{ "pubkey", cmd_help, "Show my public key", NULL, },
+	{ "contacts", cmd_help, "Show my contacts", NULL, },
+	{ NULL, NULL, NULL, NULL, },
+};
+
+static struct shell_cmd import_node[] = {
+	{ "contact",  cmd_help, "Import a contact user/pubkey",  NULL, },
+	{ NULL, NULL, NULL, NULL, },
+};
+
+static struct shell_cmd cmd_tree[] = {
+	{ "help", cmd_help, "Show help", NULL, },
+	{ "quit", cmd_quit, "Exit shell", NULL, },
+	{ "call", cmd_call, "Perform a call", NULL, },
+	{ "hangup", cmd_hangup, "Hangup the current call", NULL, },
+	{ "take", cmd_take, "Take a call", NULL, },
+	{ "show", NULL, "Show information", show_node, },
+	{ "import", NULL, "Import things", import_node, },
+	{ NULL, NULL, NULL, NULL, },
+};
 
 static void fetch_user(char *user, size_t len)
 {
@@ -312,42 +342,6 @@ static inline void init_stun(void)
 	fflush(stdout);
 }
 
-void enter_shell_loop(int __tsocki, int __tsocko)
-{
-	char *line, *cmd;
-
-	tsocki = __tsocki;
-	tsocko = __tsocko;
-
-	prompt = xzmalloc(prompt_len);
-
-	setup_prompt(prompt, prompt_len, "idle");
-	setup_readline();
-	print_shell_header();
-	init_stun();
-	register_call_notifier(&call_event);
-
-	while (!quit) {
-		line = readline(prompt);
-		if (!line) {
-			printf("\n");
-			quit = 1;
-			break;
-		}
-
-		cmd = strip_white(line);
-		if (*cmd) {
-			add_history(cmd);
-			exit_val = process_command(cmd);
-		}
-
-		xfree(line);
-	}
-
-	xfree(prompt);
-	printf("\n");
-}
-
 int cmd_help(char *args)
 {
 	struct shell_cmd *cmd;
@@ -373,78 +367,38 @@ int cmd_quit(char *args)
 	return 0;
 }
 
-int cmd_stat(char *args)
+void enter_shell_loop(int ti, int to)
 {
-	printf("%d\n", exit_val);
-	return 0;
-}
+	char *line, *cmd;
 
-int cmd_call(char *arg)
-{
-	int argc;
-	ssize_t ret;
-	char **argv = strntoargv(arg, strlen(arg), &argc);
-	struct cli_pkt cpkt;
+	init_cli_cmds(ti, to);
 
-	if (argc != 2) {
-		whine("Missing arguments: call <ipv4/ipv6/host> <port>\n");
-		xfree(argv);
-		return -EINVAL;
-	}
-	if (strlen(argv[0]) > ADDRSIZ || strlen(argv[1]) > PORTSIZ) {
-		whine("Arguments too long!\n");
-		xfree(argv);
-		return -EINVAL;
-	}
+	prompt = xzmalloc(prompt_len);
+	setup_prompt(prompt, prompt_len, "idle");
+	setup_readline();
 
-	memset(&cpkt, 0, sizeof(cpkt));
-	cpkt.ring = 1;
-	strlcpy(cpkt.address, argv[0], sizeof(cpkt.address));
-	strlcpy(cpkt.port, argv[1], sizeof(cpkt.port));
+	print_shell_header();
+	init_stun();
 
-	ret = write(tsocko, &cpkt, sizeof(cpkt));
-	ret = write(tsocko, &cpkt, sizeof(cpkt)); //XXX
-	if (ret != sizeof(cpkt)) {
-		whine("Error notifying thread!\n");
-		return -EIO;
+	register_call_notifier(&call_event);
+
+	while (!quit) {
+		line = readline(prompt);
+		if (!line) {
+			printf("\n");
+			cmd_quit(NULL);
+			break;
+		}
+
+		cmd = strip_white(line);
+		if (*cmd) {
+			add_history(cmd);
+			exit_val = process_command(cmd);
+		}
+
+		xfree(line);
 	}
 
-	printf("Calling ... hang up the line with: hangup\n");
-
-	xfree(argv);
-	return 0;
-}
-
-int cmd_hangup(char *arg)
-{
-	ssize_t ret;
-	struct cli_pkt cpkt;
-
-	memset(&cpkt, 0, sizeof(cpkt));
-	cpkt.fin = 1;
-
-	ret = write(tsocko, &cpkt, sizeof(cpkt));
-	if (ret != sizeof(cpkt)) {
-		whine("Error notifying thread!\n");
-		return -EIO;
-	}
-
-	return 0;
-}
-
-int cmd_take(char *arg)
-{
-	ssize_t ret;
-	struct cli_pkt cpkt;
-
-	memset(&cpkt, 0, sizeof(cpkt));
-	cpkt.take = 1;
-
-	ret = write(tsocko, &cpkt, sizeof(cpkt));
-	if (ret != sizeof(cpkt)) {
-		whine("Error notifying thread!\n");
-		return -EIO;
-	}
-
-	return 0;
+	xfree(prompt);
+	printf("\n");
 }
