@@ -1,11 +1,11 @@
 //////////////////////////////////////////////////////////////////////////////
 
-                    transsip telephony network
+                    transsip telephony toolkit
 
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
- transsip is a toolkit for creating a peer-to-peer overlay network for
- strongly encrypted, privacy-preserving voice-over-IP telecommunication.
+ transsip is a toolkit for creating a network for strongly encrypted,
+ privacy-preserving voice-over-IP telecommunication.
 
       ("`-''-/").___..--''"`-._            Release: 2012-xx-xx
        `6_ 6  )   `-.  (     ).`-.__.`)
@@ -15,13 +15,10 @@
    (                       ___
     \_.<pub:0101010011>--=|___E
 
-The transsip telephony network uses a high-speed ECDH mechanism (Curve25519)
-to protect voice data on end-to-end. Moreover, it uses the low-latency CELT
-codec on top of ALSA for encoding and decoding the audio channel. Participants
-can perform a direct IP-to-IP call or do a lookup of their communication
-partner through the transsip Kademlia distributed hash table. The aim of
-transsip is to provide a free, open source solution for privacy-preserving
-voice-over-IP telecommunication that is independant of a third party.
+The aim of transsip is to provide free, open source utilities for
+privacy-preserving voice-over-IP telecommunication that is independant of
+untrusted and centralized third parties. Also, by the use of strong encryption,
+it puts and end to unauthorized listeners.
 
 Why transsip [1]? There are a few available voice-over-IP solutions out there
 such as Skype [2]. However, most of them are proprietary, so that we are not
@@ -39,18 +36,15 @@ to leave us a message to <workgroup@transsip.org> or to our mailing list
 at <transsip@googlegroups.com> (Note: you have to register first). This
 project is purely non-commercial and will always stay that way!
 
+Warning: this software is an experimental prototype intended for researchers.
+
 Also, have a look at our FAQ [3] for answering your questions. Furthermore,
 we have a development blog [4] where we sometimes drop some interesting things
 or news for the outside world! A public repository of the old stable releases
-(which you probably do not want to have a look at), can be found here [5].
-
-You might want to have a look at INSTALL, REPORTING-BUGS, HACKING, CODING,
-and COPYING, too. We would be happy for patches, reviews and more. Anyways,
-enough talking from my side and happy talking via transsip!
+can be found here [5].
 
 [1] http://transsip.org/
 [2] http://www.blackhat.com/presentations/bh-europe-06/bh-eu-06-biondi/bh-eu-06-biondi-up.pdf
 [3] http://transsip.org/faq.html
 [4] http://dev.transsip.org/
 [5] http://pub.transsip.org/
-
