@@ -10,7 +10,7 @@
 #include <errno.h>
 
 #include "notifier.h"
-#include "built-in.h"
+#include "built_in.h"
 
 int register_event_hook(struct event_block **head,
 		        struct event_block *block)

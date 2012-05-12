@@ -13,7 +13,7 @@
 #include <sys/poll.h>
 #include <alsa/asoundlib.h>
 
-#include "built-in.h"
+#include "built_in.h"
 #include "die.h"
 #include "alsa.h"
 #include "xmalloc.h"

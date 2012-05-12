@@ -8,7 +8,7 @@
 
 #include "notifier.h"
 #include "locking.h"
-#include "call-notifier.h"
+#include "call_notifier.h"
 
 static struct event_head call_notifier;
 

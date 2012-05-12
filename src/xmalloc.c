@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <malloc.h>
 
-#include "built-in.h"
+#include "built_in.h"
 #include "xmalloc.h"
 #include "die.h"
 #include "xutils.h"

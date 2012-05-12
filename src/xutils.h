@@ -19,7 +19,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
-#include "built-in.h"
+#include "built_in.h"
 
 #define FILE_SETTINGS   ".transsip/settings"
 #define FILE_CONTACTS   ".transsip/contacts"

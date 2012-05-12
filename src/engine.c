@@ -22,12 +22,12 @@
 #include <netdb.h>
 #include <assert.h>
 
-#include "built-in.h"
+#include "built_in.h"
 #include "alsa.h"
 #include "die.h"
 #include "xmalloc.h"
 #include "xutils.h"
-#include "call-notifier.h"
+#include "call_notifier.h"
 
 #define SAMPLING_RATE	48000
 #define FRAME_SIZE	256

@@ -18,8 +18,8 @@
 #include "clicmds.h"
 #include "xmalloc.h"
 #include "xutils.h"
-#include "built-in.h"
-#include "call-notifier.h"
+#include "built_in.h"
+#include "call_notifier.h"
 #include "die.h"
 
 #define MAX_MENU_ELEMS		100

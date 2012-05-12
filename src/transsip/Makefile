@@ -10,7 +10,7 @@ lib-objs    = xmalloc.o		\
 	      alsa.o		\
 	      engine.o		\
 	      notifier.o	\
-	      call-notifier.o	\
+	      call_notifier.o	\
 	      xutils.o		\
 	      stun.o		\
 	      cli.o		\

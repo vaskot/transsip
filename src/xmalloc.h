@@ -9,7 +9,7 @@
 #ifndef XMALLOC_H
 #define XMALLOC_H
 
-#include "built-in.h"
+#include "built_in.h"
 
 extern __hidden void *xmalloc(size_t size);
 extern __hidden void *xzmalloc(size_t size);
