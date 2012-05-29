@@ -4,30 +4,32 @@
 
 \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 
- transsip is a toolkit for creating a network for strongly encrypted,
- privacy-preserving voice-over-IP telecommunication.
+ transsip is a toolkit for creating a decentralized network for strongly
+ encrypted, privacy-preserving voice-over-IP telecommunication.
+                   _________                 ______________
+                  < Hi Bob! >..xXo#%!~x&^?..< Hello Alice! >
+                   ---------     |            --------------
+               ^__^   /          |                      \   ^__^
+       _______/(oo)  /           \ ^__^                  \  (oo)\_______
+   /\/( Alice /(__)                (xx)\_______             (__)\  Bob  )\/\
+      | w----||                    (__)\Mallory)\/\             ||----w |
+      ||     ||                     U  ||----w |                ||     ||
+                                       ||     ||
+      Release: 2012-xx-xx                          Web: http://transsip.org
 
-      ("`-''-/").___..--''"`-._            Release: 2012-xx-xx
-       `6_ 6  )   `-.  (     ).`-.__.`)
-       (_Y_.)'  ._   )  `._ `. ``-..-'     Web: http://transsip.org
-     _..`--'_..-_/  /--'_.' ,'                       ___
-    (il),-''--(li),'--((!.-'---.<priv:1011010110>--=|___E
-   (                       ___
-    \_.<pub:0101010011>--=|___E
-
-The aim of transsip is to provide free, open source utilities for
-privacy-preserving voice-over-IP telecommunication that is independant of
-untrusted and centralized third parties. Also, by the use of strong encryption,
-it puts and end to unauthorized listeners.
+The aim of transsip is to provide free, open source utilities for decentralized,
+privacy-preserving voice-over-IP communication, that is independant of untrusted
+and centralized third parties. Also, by the use of strong encryption, it puts
+and end to unauthorized listeners.
 
 Why transsip [1]? There are a few available voice-over-IP solutions out there
 such as Skype [2]. However, most of them are proprietary, so that we are not
-able to know if there are hidden backdoors included, or use a weak encryption
-or no encryption at all. And as you see from Skype's analysis, there cannot
-come anything good from that software. We do not only want to blame Skype,
-but there's lots of such crap out there that cannot be trusted. Also, some of
-the existing solutions route voice traffic through their private servers and
-use these data for other purposes. Therefore our software closes this gap of
+able to know if there are hidden backdoors / LI interfaces included, or use
+a weak encryption or no encryption at all. And as you see from Skype's analysis,
+there cannot come anything good from that software. We do not only want to blame
+Skype, but there's lots of such crap out there that cannot be trusted. Also,
+some of the existing solutions route voice traffic through their private servers
+and use these data for other purposes. Therefore our software closes this gap of
 an open source solution to preserve users privacy.
 
 The transsip toolkit is an open source project covered by the GNU General
@@ -37,11 +39,10 @@ at <transsip@googlegroups.com> (Note: you have to register first). This
 project is purely non-commercial and will always stay that way!
 
 Warning: this software is an experimental prototype intended for researchers.
-
-Also, have a look at our FAQ [3] for answering your questions. Furthermore,
-we have a development blog [4] where we sometimes drop some interesting things
-or news for the outside world! A public repository of the old stable releases
-can be found here [5].
+Use at your own risk. Have a look at our FAQ [3] for answering your questions.
+Furthermore, we have a development blog [4] where we sometimes drop some
+interesting things or news for the outside world! A public repository of the old
+stable releases can be found here [5].
 
 [1] http://transsip.org/
 [2] http://www.blackhat.com/presentations/bh-europe-06/bh-eu-06-biondi/bh-eu-06-biondi-up.pdf
