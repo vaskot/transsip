@@ -7,6 +7,7 @@ CFLAGS += -DPROGNAME_STRING="\"transsip\"" -DVERSION_STRING="\"0.5.0\""
 
 core-objs   = transsip.o
 lib-objs    = xmalloc.o		\
+	      gf.o		\
 	      alsa.o		\
 	      engine.o		\
 	      notifier.o	\
