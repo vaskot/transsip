@@ -9,12 +9,12 @@
                    _________                 ______________
                   < Hi Bob! >..xXo#%!~x&^?..< Hello Alice! >
                    ---------     |           --------------
-               ^__^   /          |                      \   ^__^
-       _______/(oo)  /           \ ^__^                  \  (oo)\_______
-   /\/( Alice /(__)                (xx)\_______             (__)\  Bob  )\/\
-      | w----||                    (__)\Mallory)\/\             ||----w |
-      ||     ||                     U  ||----w |                ||     ||
-                                       ||     ||
+               ^__^   /        ->X<-                    \   ^__^
+       _______/(oo)  /            \ ^__^                 \  (oo)\_______
+   /\/( Alice /(__)                 (xx)\_______            (__)\  Bob  )\/\
+      | w----||                     (__)\Mallory)\/\            ||----w |
+      ||     ||                      U  ||----w |               ||     ||
+                                        ||     ||
       Release: 2012-xx-xx                          Web: http://transsip.org
 
 The aim of transsip is to provide free, open source utilities for decentralized,
