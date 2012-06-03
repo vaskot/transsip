@@ -29,8 +29,8 @@ a weak encryption or no encryption at all. And as you see from Skype's analysis,
 there cannot come anything good from that software. We do not only want to blame
 Skype, but there's lots of such crap out there that cannot be trusted. Also,
 some of the existing solutions route voice traffic through their private servers
-and use these data for other purposes. Therefore our software closes this gap of
-an open source solution to preserve users privacy.
+and use these data for other purposes. Therefore, our software closes this gap
+of an open source solution to preserve users privacy.
 
 The transsip toolkit is an open source project covered by the GNU General
 Public License. For any questions or feedback about transsip you are welcome

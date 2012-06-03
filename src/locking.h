@@ -1,8 +1,7 @@
 /*
  * transsip - the telephony toolkit
  * By Daniel Borkmann <daniel@transsip.org>
- * Copyright 2011, 2012 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
- * Swiss federal institute of technology (ETH Zurich)
+ * Copyright 2011, 2012 Daniel Borkmann <dborkma@tik.ee.ethz.ch>
  * Subject to the GPL, version 2.
  */
 

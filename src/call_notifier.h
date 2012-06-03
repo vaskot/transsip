@@ -1,8 +1,7 @@
 /*
  * transsip - the telephony toolkit
  * By Daniel Borkmann <daniel@transsip.org>
- * Copyright 2011, 2012 Daniel Borkmann <dborkma@tik.ee.ethz.ch>,
- * Swiss federal institute of technology (ETH Zurich)
+ * Copyright 2011, 2012 Daniel Borkmann <dborkma@tik.ee.ethz.ch>
  * Subject to the GPL, version 2.
  */
 
@@ -24,4 +23,4 @@ extern int register_call_notifier_once(struct event_block *block);
 extern int unregister_call_notifier(struct event_block *block);
 extern int call_notifier_exec(unsigned long event, const void *arg);
 
-#endif
+#endif /* CHAINS_H */
